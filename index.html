@@ -191,13 +191,14 @@ textarea.form-input{resize:vertical;min-height:80px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── Success flash ── */
-.success-flash{position:fixed;inset:0;background:var(--ok);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;animation:flashIn .3s ease;color:#fff;text-align:center;padding:32px}
+.success-flash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;animation:flashIn .25s ease;color:#fff;text-align:center;padding:32px}
 .success-flash.warn-flash{background:var(--warn)}
-@keyframes flashIn{from{opacity:0}to{opacity:1}}
-.flash-icon{font-size:80px;margin-bottom:20px}
-.flash-name{font-size:28px;font-weight:800;margin-bottom:8px}
-.flash-group{font-size:16px;opacity:.85;margin-bottom:20px}
-.flash-info{font-size:14px;opacity:.75}
+@keyframes flashIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.flash-icon{font-size:88px;margin-bottom:16px;filter:drop-shadow(0 4px 16px rgba(0,0,0,.2))}
+.flash-name{font-size:30px;font-weight:800;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.15)}
+.flash-group{padding:6px 16px;border-radius:20px;background:rgba(255,255,255,.2);font-size:14px;font-weight:700;margin-bottom:16px;display:inline-block}
+.flash-info{font-size:13px;opacity:.8;margin-bottom:6px}
+.flash-dismiss{margin-top:28px;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.4);color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
 
 /* ── Import ── */
 .import-drop{border:2px dashed var(--line);border-radius:var(--r);padding:40px 20px;text-align:center;color:var(--ink2);cursor:pointer;transition:border-color .2s}
@@ -1044,7 +1045,7 @@ function showPersonCard(id) {
         <button class="btn btn-ghost btn-sm" onclick="openEditModal('${p.candidate_id}')">✏️ Sửa</button>
         ${adminBtns}
       </div>
-      <button class="btn btn-ghost btn-full" onclick="clearPersonCard()" style="margin-top:10px;font-size:13px">✕ Đóng</button>
+      <button class="btn btn-ghost btn-full" onclick="clearPersonCard()" style="margin-top:10px;min-height:52px;font-size:15px;border:2px solid var(--line)">✕ Đóng &amp; quét người tiếp theo</button>
     </div>
   `;
   document.getElementById('personCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1053,7 +1054,15 @@ function showPersonCard(id) {
 function clearPersonCard() {
   document.getElementById('personCard').innerHTML = '';
   STATE.currentPerson = null;
-  document.getElementById('scanStatus').textContent = 'Sẵn sàng';
+  lastQrPayload = '';
+  qrCooldown = false;
+  // Resume scan loop if camera is still on
+  if (STATE.cameraStream && !STATE.scanLoop) {
+    startScanLoop();
+    setScanStatus('Đang quét — đưa mã QR vào khung', 'scanning');
+  }
+  // Scroll back to top of check-in tab
+  document.getElementById('tab-content-checkin').scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ── CHECK-IN ──────────────────────────────────────────────────────────────────
@@ -1106,19 +1115,24 @@ async function doUndo(id) {
 
 function showCheckinFlash(p, isWarning) {
   const group = getGroup(p.detailed_group);
+  const bg = group ? group.color_hex : (isWarning ? 'var(--warn)' : 'var(--ok)');
+  const fg = group ? group.text_color_hex : '#fff';
   const flash = document.createElement('div');
   flash.className = 'success-flash' + (isWarning ? ' warn-flash' : '');
-  flash.style.background = group ? group.color_hex : 'var(--ok)';
-  flash.style.color = group ? group.text_color_hex : '#fff';
+  flash.style.cssText = `background:${bg};color:${fg}`;
   flash.innerHTML = `
     <div class="flash-icon">✅</div>
-    <div class="flash-name">${p.full_name}</div>
+    <div class="flash-name">${p.title ? p.title + ' ' : ''}${p.full_name}</div>
     <div class="flash-group">${p.detailed_group || ''}</div>
     <div class="flash-info">${p.affiliation || ''}</div>
+    <div class="flash-info" style="margin-top:4px">Check-in thành công · ${fmtTime(p.checkin_time || new Date().toISOString())}</div>
+    <button class="flash-dismiss" onclick="this.parentElement.remove()">Tiếp tục →</button>
   `;
+  flash.addEventListener('click', e => { if (e.target === flash) flash.remove(); });
   document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 2500);
-  document.getElementById('scanStatus').textContent = 'Sẵn sàng — quét người tiếp theo';
+  // Auto-dismiss after 3.5s
+  setTimeout(() => { if (flash.parentElement) flash.remove(); }, 3500);
+  if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
 }
 
 // ── NOTE ──────────────────────────────────────────────────────────────────────
@@ -1570,7 +1584,14 @@ function switchTab(name) {
   });
   if (name === 'dashboard') refreshDashboard();
   if (name === 'admin') { switchAdminTab(STATE.currentAdminTab); loadUsers(); }
-  if (name !== 'checkin') { stopCamera(); }
+  if (name !== 'checkin') {
+    stopCamera();
+  } else {
+    // Auto-start camera when returning to check-in tab
+    if (!STATE.cameraStream) {
+      setTimeout(() => startCamera(), 300);
+    }
+  }
 }
 
 function switchAdminTab(name) {
