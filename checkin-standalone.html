@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mekong TESOL Check-in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root{
+      --p:#6a2ea6; --p-dark:#5420a0; --p-light:#8b4cc7;
+      --i:#2703a6; --i-dark:#1d0280;
+      --g:#dd9a4a; --g-light:#edd66d; --g-dark:#c48a38;
+      --pk:#f2b0fc; --bl:#b0daff; --yl:#edd66d;
+      --bg-deep:#201e59; --bg-plum:#3a1f73; --bg-paper:#faf8ff;
+      --ink-900:#0f0d2e; --ink-700:#2a2850; --ink-500:#5a5878; --ink-300:#9e9cc0;
+      --line:#e4e1f2; --line-light:#f2f0fa;
+      --grad-dark:linear-gradient(135deg,#0f0d2e 0%,#201e59 40%,#3a1f73 70%,#6a2ea6 100%);
+      --shadow-glow:0 8px 32px rgba(106,46,166,.32);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%;background:var(--bg-paper)}
+    body{font-family:'Source Sans 3',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:var(--ink-900);line-height:1.5}
+    h1,h2,h3{font-family:'Sora',sans-serif}
+    button{cursor:pointer;font:inherit}
+
+    .container{max-width:600px;margin:0 auto;padding:20px}
+    .header{background:var(--grad-dark);color:#fff;padding:24px;border-radius:16px;margin-bottom:24px;box-shadow:var(--shadow-glow)}
+    .header h1{font-size:24px;margin-bottom:4px}
+    .header p{font-size:13px;color:rgba(210,205,255,.8)}
+
+    .scanner{background:var(--grad-dark);border-radius:14px;padding:16px;color:#fff;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 24px rgba(106,46,166,.15)}
+    .scanner-frame{position:relative;width:100%;aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:#090822;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 20px rgba(0,0,0,.6)}
+    .scanner-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .scanner-placeholder{text-align:center;color:rgba(230,225,255,.78);padding:20px}
+    .scanner-placeholder i{width:48px;height:48px;color:var(--bl);margin-bottom:12px;display:block}
+    .scan-corners{position:absolute;inset:20px;pointer-events:none}
+    .scan-corners span{position:absolute;width:48px;height:48px;border:3px solid var(--pk);box-shadow:0 0 10px rgba(242,176,252,.4)}
+    .scan-corners .tl{top:0;left:0;border-right:0;border-bottom:0;border-radius:12px 0 0 0}
+    .scan-corners .tr{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 12px 0 0}
+    .scan-corners .bl{bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 12px}
+    .scan-corners .br{bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 12px 0}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 16px;border-radius:10px;font-family:'Sora';font-weight:700;font-size:14px;border:0;text-decoration:none;transition:transform .15s,box-shadow .15s;width:100%}
+    .btn i{width:18px;height:18px}
+    .btn-primary{background:linear-gradient(135deg,#8b4cc7,#6a2ea6);color:#fff;box-shadow:var(--shadow-glow)}
+    .btn-primary:active{transform:scale(.98)}
+    .btn-soft{background:var(--line-light);color:var(--ink-700);border:1px solid var(--line);margin-top:10px}
+
+    .search-box{display:flex;gap:10px;margin-top:20px}
+    .search-input{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:12px;font-size:14px;outline:none}
+    .search-input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(106,46,166,.12)}
+    .search-btn{padding:12px 16px;background:var(--p);color:#fff;border:0;border-radius:10px;font-family:'Sora';font-weight:700;cursor:pointer}
+
+    .results{margin-top:16px;max-height:300px;overflow-y:auto}
+    .result-item{padding:14px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#fff;cursor:pointer}
+    .result-item:hover{border-color:var(--p);background:#fdf8ff}
+    .result-name{font-family:'Sora';font-weight:800;font-size:14px}
+    .result-sub{font-size:12px;color:var(--ink-500);margin-top:2px}
+
+    .person-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:20px}
+    .person-card h2{margin-bottom:12px;font-size:20px}
+    .person-info{display:grid;gap:10px;font-size:13px;color:var(--ink-700);margin:12px 0}
+    .person-actions{display:flex;gap:10px;margin-top:16px}
+    .person-actions button{flex:1;padding:12px;border:1.5px solid var(--p);background:#fff;color:var(--p);border-radius:10px;font-weight:700;cursor:pointer}
+    .person-actions button.checkin{background:var(--p);color:#fff;border:0}
+
+    .toast{position:fixed;bottom:20px;left:20px;right:20px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.15);animation:slideUp .3s ease;z-index:100}
+    @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+
+    @media(max-width:600px){
+      .container{padding:12px}
+      .header{padding:16px;margin-bottom:16px}
+      .header h1{font-size:20px}
+      .btn{min-height:44px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Mekong TESOL</h1>
+      <p>Check-in · Quét QR hoặc tìm kiếm</p>
+    </div>
+
+    <div class="scanner">
+      <div style="color:#fff">
+        <h2 style="font-size:16px;margin-bottom:4px">Scanner QR</h2>
+        <div style="font-size:12px;color:rgba(210,205,255,.7)">Camera sẵn sàng - đặt QR vào khung</div>
+      </div>
+      <div class="scanner-frame">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="scanner-placeholder" id="placeholder">
+          <i data-lucide="camera"></i>
+          <div style="font-family:'Sora';font-weight:800">Bật camera</div>
+        </div>
+        <div class="scan-corners">
+          <span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="cameraBtn"><i data-lucide="video"></i>Bật camera</button>
+    </div>
+
+    <div class="search-box">
+      <input class="search-input" id="searchInput" placeholder="Tên, email, SĐT...">
+      <button class="search-btn" id="searchBtn"><i data-lucide="search"></i></button>
+    </div>
+
+    <div class="results" id="results"></div>
+
+    <div id="personCard"></div>
+  </div>
+
+  <div class="toast" id="toast" style="display:none"></div>
+
+  <script>
+    const state = {
+      cameraStream: null,
+      qrDetector: null,
+      selectedId: null,
+      participants: [
+        {id:'MT2026-0001',name:'Assoc. Prof. Maria Santos',email:'maria.santos@example.edu',phone:'+63 900 111 222',affiliation:'University of the Philippines',qrPayload:'Assoc. Prof. Maria Santos|maria.santos@example.edu',status:'Not checked-in'},
+        {id:'MT2026-0002',name:'Dr. Tran Minh Anh',email:'minhanh.tran@example.vn',phone:'+84 912 333 444',affiliation:'Can Tho University',qrPayload:'Dr. Tran Minh Anh|minhanh.tran@example.vn',status:'Checked-in'},
+        {id:'MT2026-0003',name:'Le Thi Hong Nhung',email:'nhung.le@example.com',phone:'+84 988 555 101',affiliation:'Hue University',qrPayload:'Le Thi Hong Nhung|nhung.le@example.com',status:'Not checked-in'},
+        {id:'MT2026-0004',name:'Somchai Prasert',email:'somchai.p@example.ac.th',phone:'+66 81 222 3333',affiliation:'Chiang Mai University',qrPayload:'Somchai Prasert|somchai.p@example.ac.th',status:'Not checked-in'},
+        {id:'MT2026-0005',name:'Nguyen Van Khoa',email:'khoa.nguyen@example.vn',phone:'+84 903 777 888',affiliation:'Mekong TESOL Committee',qrPayload:'Nguyen Van Khoa|khoa.nguyen@example.vn',status:'Checked-in'},
+        {id:'MT2026-0006',name:'Ms. Linh Pham',email:'linh.pham@sponsor.example',phone:'+84 909 100 200',affiliation:'ELT Publishing Partner',qrPayload:'Ms. Linh Pham|linh.pham@sponsor.example',status:'Not checked-in'},
+      ]
+    };
+
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => [...document.querySelectorAll(sel)];
+
+    function toast(msg) {
+      const el = $('#toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    async function startCamera() {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          toast('❌ Trình duyệt không hỗ trợ camera');
+          return;
+        }
+
+        let stream;
+        const constraints = [
+          {video: {facingMode: 'environment', width: {ideal: 1280}, height: {ideal: 720}}, audio: false},
+          {video: {facingMode: 'user', width: {ideal: 1280}, height: {ideal: 720}}, audio: false},
+          {video: true, audio: false}
+        ];
+
+        for (const constraint of constraints) {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia(constraint);
+            if (stream) break;
+          } catch (e) {
+            continue;
+          }
+        }
+
+        if (!stream) {
+          toast('❌ Không tìm thấy camera. Kiểm tra Settings > Privacy > Camera');
+          return;
+        }
+
+        state.cameraStream = stream;
+        const video = $('#video');
+        video.srcObject = stream;
+        await video.play();
+        $('#placeholder').style.display = 'none';
+        $('#cameraBtn').textContent = '✓ Camera đã bật';
+        toast('✅ Camera ready - Đặt QR vào khung');
+        startQRLoop(video);
+      } catch (err) {
+        let msg = '❌ Không bật được camera';
+        if (err.name === 'NotAllowedError') msg = '❌ Bạn từ chối quyền camera';
+        else if (err.name === 'NotFoundError') msg = '❌ Không tìm thấy camera';
+        toast(msg);
+      }
+    }
+
+    async function startQRLoop(video) {
+      if (!window.BarcodeDetector) {
+        toast('⚠️ Trình duyệt cũ - dùng tìm kiếm thủ công');
+        return;
+      }
+
+      try {
+        state.qrDetector = new BarcodeDetector({formats: ['qr_code']});
+      } catch (e) {
+        toast('⚠️ QR không được hỗ trợ');
+        return;
+      }
+
+      const scan = async () => {
+        if (!state.cameraStream || !state.qrDetector) return;
+        try {
+          if (video.readyState >= 2) {
+            const codes = await state.qrDetector.detect(video);
+            if (codes.length > 0) {
+              const payload = codes[0].rawValue || '';
+              const p = state.participants.find(x => x.qrPayload === payload);
+              if (p) {
+                selectPerson(p.id);
+                toast(`✅ ${p.name}`);
+              }
+            }
+          }
+        } catch (e) {}
+        requestAnimationFrame(scan);
+      };
+      scan();
+    }
+
+    function selectPerson(id) {
+      state.selectedId = id;
+      const p = state.participants.find(x => x.id === id);
+      if (!p) return;
+
+      $('#personCard').innerHTML = `
+        <div class="person-card">
+          <h2>${p.name}</h2>
+          <div class="person-info">
+            <div>📧 ${p.email}</div>
+            <div>📞 ${p.phone}</div>
+            <div>🏢 ${p.affiliation}</div>
+            <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line)">
+              <strong>${p.status}</strong>
+            </div>
+          </div>
+          <div class="person-actions">
+            <button onclick="checkIn('${p.id}')" class="checkin">
+              <i data-lucide="check"></i>Xác nhận check-in
+            </button>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    function checkIn(id) {
+      const p = state.participants.find(x => x.id === id);
+      if (p) {
+        p.status = 'Checked-in';
+        toast(`✅ ${p.name} - Check-in thành công`);
+        selectPerson(id);
+      }
+    }
+
+    function search() {
+      const q = $('#searchInput').value.toLowerCase();
+      if (!q) return;
+      const results = state.participants.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q) ||
+        p.phone.includes(q)
+      );
+
+      $('#results').innerHTML = results.length ? results.map(p => `
+        <div class="result-item" onclick="selectPerson('${p.id}')">
+          <div class="result-name">${p.name}</div>
+          <div class="result-sub">${p.email}</div>
+        </div>
+      `).join('') : '<div style="padding:20px;text-align:center;color:var(--ink-500)">Không tìm thấy</div>';
+    }
+
+    $('#cameraBtn').addEventListener('click', () => {
+      if (state.cameraStream) {
+        state.cameraStream.getTracks().forEach(t => t.stop());
+        state.cameraStream = null;
+        $('#cameraBtn').innerHTML = '<i data-lucide="video"></i>Bật camera';
+        $('#placeholder').style.display = 'flex';
+      } else {
+        startCamera();
+      }
+    });
+
+    $('#searchInput').addEventListener('input', search);
+    $('#searchBtn').addEventListener('click', search);
+
+    window.addEventListener('load', () => lucide.createIcons());
+  </script>
+</body>
+</html>
