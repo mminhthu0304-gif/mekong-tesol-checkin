@@ -1645,12 +1645,35 @@
 
     async function startCamera(){
       try{
-        let stream;
-        try{
-          stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
-        }catch(e){
-          stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+        // Check if getUserMedia is supported
+        if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+          toast('Trình duyệt không hỗ trợ', 'Cập nhật trình duyệt hoặc dùng tìm kiếm thủ công.');
+          return;
         }
+
+        let stream;
+        const cameraConstraints = [
+          {video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},audio:false},
+          {video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false},
+          {video:true,audio:false}
+        ];
+
+        // Try each camera constraint
+        for(const constraint of cameraConstraints){
+          try{
+            stream = await navigator.mediaDevices.getUserMedia(constraint);
+            if(stream) break;
+          }catch(e){
+            // Continue to next constraint
+            continue;
+          }
+        }
+
+        if(!stream){
+          toast('Không tìm thấy camera', '1. Cấp quyền camera cho trang này\n2. Kiểm tra Settings > Privacy > Camera\n3. Dùng tìm kiếm thủ công nếu cần');
+          return;
+        }
+
         state.cameraStream = stream;
         const video = $('#cameraVideo');
         video.srcObject = stream;
@@ -1658,11 +1681,16 @@
         video.hidden = false;
         $('#cameraPlaceholder').hidden = true;
         $('#toggleCameraBtn').innerHTML = '<i data-lucide="video-off"></i>Tắt camera';
-        toast('Camera đã bật', 'Sẵn sàng quét QR. Đặt camera sao cho QR nằm trong khung.');
+        toast('Camera đã bật ✓', 'Đặt QR trong khung để quét');
         startQrLoop(video);
         lucide.createIcons();
       }catch(err){
-        toast('Không bật được camera', 'Kiểm tra quyền camera trong cài đặt trình duyệt. Dùng tìm kiếm thủ công nếu cần.');
+        let errorMsg = 'Kiểm tra quyền camera';
+        if(err.name === 'NotAllowedError') errorMsg = 'Bạn từ chối quyền camera. Cho phép trong cài đặt trình duyệt.';
+        else if(err.name === 'NotFoundError') errorMsg = 'Không tìm thấy camera. Kiểm tra phần cứng.';
+        else if(err.name === 'NotReadableError') errorMsg = 'Camera đang được ứng dụng khác sử dụng.';
+
+        toast('Không bật được camera', errorMsg);
       }
     }
 
