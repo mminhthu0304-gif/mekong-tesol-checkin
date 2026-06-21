@@ -7,6 +7,7 @@
   <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');</style>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root{
       --p:#6a2ea6; --p-dark:#5420a0; --p-light:#8b4cc7;
@@ -112,19 +113,20 @@
     .search-input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--ink-300)}
     .search-input-wrap .input{padding-left:44px;min-height:52px;font-size:17px}
 
-    .scanner{background:var(--grad-dark);border-radius:var(--r-lg);padding:18px;color:#fff;min-height:360px;display:flex;flex-direction:column;gap:14px}
+    .scanner{background:var(--grad-dark);border-radius:var(--r-lg);padding:18px;color:#fff;min-height:400px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow-lg)}
     .scanner-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
-    .scanner-head h2{color:#fff;font-size:18px}
-    .scanner-frame{position:relative;flex:1;min-height:230px;border-radius:var(--r-md);overflow:hidden;background:#090822;border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center}
+    .scanner-head h2{color:#fff;font-size:18px;margin:0}
+    .scanner-frame{position:relative;flex:1;min-height:280px;border-radius:var(--r-md);overflow:hidden;background:#090822;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;aspect-ratio:4/5;max-width:100%;box-shadow:inset 0 0 20px rgba(0,0,0,.6)}
     .scanner-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-    .scanner-placeholder{text-align:center;color:rgba(230,225,255,.78);padding:20px}
-    .scanner-placeholder i{width:42px;height:42px;color:var(--bl);margin-bottom:10px}
-    .scan-corners{position:absolute;inset:38px;pointer-events:none}
-    .scan-corners span{position:absolute;width:42px;height:42px;border:4px solid var(--pk)}
-    .scan-corners .tl{top:0;left:0;border-right:0;border-bottom:0;border-radius:10px 0 0 0}
-    .scan-corners .tr{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 10px 0 0}
-    .scan-corners .bl{bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 10px}
-    .scan-corners .br{bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 10px 0}
+    .scanner-placeholder{text-align:center;color:rgba(230,225,255,.78);padding:20px;font-size:14px}
+    .scanner-placeholder i{width:48px;height:48px;color:var(--bl);margin-bottom:12px;display:block}
+    .scanner-placeholder div:first-of-type{font-family:'Sora';font-weight:800;margin-bottom:6px;font-size:16px}
+    .scan-corners{position:absolute;inset:20px;pointer-events:none}
+    .scan-corners span{position:absolute;width:48px;height:48px;border:3px solid var(--pk);box-shadow:0 0 10px rgba(242,176,252,.4)}
+    .scan-corners .tl{top:0;left:0;border-right:0;border-bottom:0;border-radius:12px 0 0 0}
+    .scan-corners .tr{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 12px 0 0}
+    .scan-corners .bl{bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 12px}
+    .scan-corners .br{bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 12px 0}
     .scanner-actions{display:flex;gap:10px;flex-wrap:wrap}
 
     .person-card{display:grid;gap:16px}
@@ -198,7 +200,12 @@
     .toast-item b{display:block;font-family:'Sora';font-size:13px;margin-bottom:2px}
     .toast-item span{font-size:13px;color:var(--ink-500)}
 
-    .qr-preview{display:grid;place-items:center;gap:10px;padding:18px;border:1px solid var(--line);border-radius:var(--r-lg);background:#fff}
+    .qr-preview{display:grid;place-items:center;gap:20px;padding:24px;border:2px solid var(--line);border-radius:var(--r-lg);background:#fff;box-shadow:0 4px 16px rgba(15,13,46,.08)}
+    .qr-preview #qrcode{display:flex;justify-content:center;align-items:center}
+    .qr-preview #qrcode canvas{max-width:280px;width:100%;height:auto;padding:16px;background:#fff;border:3px solid var(--p);border-radius:16px;box-shadow:0 8px 24px rgba(106,46,166,.15)}
+    .qr-preview h3{font-size:18px;font-weight:800;color:var(--ink-900);margin:0}
+    .qr-preview > div:nth-child(2){text-align:center;width:100%}
+    .qr-preview-email{font-size:14px;color:var(--ink-500);margin-bottom:12px;word-break:break-word}
     .scan-summary{display:grid;grid-template-columns:76px 1fr;gap:16px;align-items:start}
     .import-review{display:grid;gap:12px}
     .duplicate-card{border:1px solid var(--line);border-left:5px solid var(--warn);border-radius:14px;padding:14px;background:#fffaf0}
@@ -206,12 +213,12 @@
     .duplicate-card .dup-meta{font-size:13px;color:var(--ink-700);display:grid;gap:3px;margin-bottom:10px}
     .duplicate-card .dup-actions{display:flex;gap:10px;flex-wrap:wrap}
     .f-checkbox{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:700;color:var(--ink-700)}
-    .qr-box{width:144px;height:144px;background:#fff;border:3px solid var(--p);border-radius:14px;padding:10px;position:relative}
-    .qr-inner{width:100%;height:100%;background-image:repeating-conic-gradient(#201e59 0%,#201e59 25%,transparent 0%,transparent 50%);background-size:12px 12px;border-radius:6px}
-    .qr-corner{position:absolute;width:28px;height:28px;border:4px solid var(--p)}
-    .qr-corner.tl{top:6px;left:6px;border-right:0;border-bottom:0;border-radius:5px 0 0 0}
-    .qr-corner.tr{top:6px;right:6px;border-left:0;border-bottom:0;border-radius:0 5px 0 0}
-    .qr-corner.bl{bottom:6px;left:6px;border-right:0;border-top:0;border-radius:0 0 0 5px}
+    .qr-box{width:160px;height:160px;background:#fff;border:3px solid var(--p);border-radius:14px;padding:12px;position:relative;box-shadow:0 4px 12px rgba(106,46,166,.12)}
+    .qr-inner{width:100%;height:100%;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f0f0f0}
+    .qr-corner{position:absolute;width:32px;height:32px;border:3px solid var(--p)}
+    .qr-corner.tl{top:4px;left:4px;border-right:0;border-bottom:0;border-radius:6px 0 0 0}
+    .qr-corner.tr{top:4px;right:4px;border-left:0;border-bottom:0;border-radius:0 6px 0 0}
+    .qr-corner.bl{bottom:4px;left:4px;border-right:0;border-top:0;border-radius:0 0 0 6px}
 
     @media(max-width:1100px){
       .app{grid-template-columns:1fr}
@@ -235,17 +242,32 @@
       .form-grid,.info-grid{grid-template-columns:1fr}
       .search-box{grid-template-columns:1fr}
       .person-top{flex-direction:column}
-      .person-name{font-size:32px}
-      .group-chip-large{font-size:17px;width:100%;justify-content:center;padding:12px 14px}
-      .meta{font-size:18px;display:grid;gap:12px}
-      .scanner{min-height:420px}
-      .scanner-frame{min-height:280px}
-      .scanner-actions .btn,.person-actions .btn{width:100%}
-      .note-box{font-size:20px}
-      .scan-summary{grid-template-columns:1fr}
-      .guest-header{padding:24px}
-      .guest-header h2{font-size:24px}
-      th,td{padding:10px 12px}
+      .person-name{font-size:28px;margin-bottom:8px}
+      .group-chip-large{font-size:16px;width:100%;justify-content:center;padding:12px 14px}
+      .meta{font-size:14px;display:grid;gap:10px}
+      .meta span{display:flex;gap:4px}
+      .scanner{min-height:480px;padding:14px}
+      .scanner-head{flex-direction:column;align-items:flex-start;gap:8px}
+      .scanner-head h2{font-size:16px}
+      .scanner-frame{aspect-ratio:9/12;min-height:320px}
+      .scan-corners{inset:12px}
+      .scan-corners span{width:36px;height:36px;border-width:2px}
+      .scanner-actions{flex-direction:column}
+      .scanner-actions .btn{width:100%;margin:0}
+      .person-actions .btn{width:100%;font-size:13px;min-height:48px}
+      .note-box{font-size:14px;padding:12px 14px;margin-bottom:12px}
+      .scan-summary{grid-template-columns:1fr;gap:12px}
+      .guest-header{padding:20px}
+      .guest-header h2{font-size:22px}
+      .qr-preview{padding:16px;gap:16px;border-radius:12px}
+      .qr-preview #qrcode canvas{max-width:240px}
+      .qr-preview h3{font-size:16px}
+      .qr-preview-email{font-size:12px}
+      th,td{padding:8px 10px;font-size:13px}
+      .modal{width:min(95vw,100%);border-radius:16px}
+      .modal-body{padding:16px}
+      .modal-head{padding:16px}
+      .card{padding:16px;border-radius:12px}
     }
     /* ── Login overlay ── */
     .login-overlay{position:fixed;inset:0;z-index:400;background:var(--grad-dark);display:flex;align-items:center;justify-content:center;padding:20px}
@@ -1623,7 +1645,12 @@
 
     async function startCamera(){
       try{
-        const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+        let stream;
+        try{
+          stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+        }catch(e){
+          stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+        }
         state.cameraStream = stream;
         const video = $('#cameraVideo');
         video.srcObject = stream;
@@ -1631,11 +1658,11 @@
         video.hidden = false;
         $('#cameraPlaceholder').hidden = true;
         $('#toggleCameraBtn').innerHTML = '<i data-lucide="video-off"></i>Tắt camera';
-        toast('Camera đã bật', 'Sẵn sàng quét QR trên thiết bị này.');
+        toast('Camera đã bật', 'Sẵn sàng quét QR. Đặt camera sao cho QR nằm trong khung.');
         startQrLoop(video);
         lucide.createIcons();
       }catch(err){
-        toast('Không bật được camera', 'Trình duyệt hoặc quyền camera chưa sẵn sàng.');
+        toast('Không bật được camera', 'Kiểm tra quyền camera trong cài đặt trình duyệt. Dùng tìm kiếm thủ công nếu cần.');
       }
     }
 
@@ -1787,15 +1814,29 @@
       if(!p) return;
       $('#qrModalBody').innerHTML = `
         <div class="qr-preview">
-          <div class="qr-box"><div class="qr-inner"></div><span class="qr-corner tl"></span><span class="qr-corner tr"></span><span class="qr-corner bl"></span></div>
-          <div style="text-align:center">
-            <h3 style="font-size:18px;margin-bottom:4px">${escapeHtml(p.name)}</h3>
-            <div style="color:var(--ink-500)">${escapeHtml(p.email)}</div>
-            <div class="chips" style="justify-content:center;margin-top:10px">${groupChip(p)}${qrChip(p)}</div>
+          <div id="qrcode" style="width:100%;display:flex;justify-content:center"></div>
+          <div style="text-align:center;width:100%">
+            <h3>${escapeHtml(p.name)}</h3>
+            <div class="qr-preview-email">${escapeHtml(p.email)}</div>
+            <div class="chips" style="justify-content:center;margin:12px 0 0 0">${groupChip(p)}${qrChip(p)}</div>
           </div>
-          <div class="info-cell" style="width:100%"><b>QR payload</b><span>${escapeHtml(p.qrPayload || 'Chưa có QR payload')}</span></div>
+          <div class="info-cell" style="width:100%;margin-top:12px"><b>QR Payload</b><span style="font-family:'JetBrains Mono';font-size:12px">${escapeHtml(p.qrPayload || 'Chưa có QR')}</span></div>
         </div>`;
       $('#qrModal').classList.add('active');
+      setTimeout(() => {
+        if(p.qrPayload && window.QRCode){
+          const qrContainer = document.getElementById('qrcode');
+          qrContainer.innerHTML = '';
+          new QRCode(qrContainer, {
+            text: p.qrPayload,
+            width: 240,
+            height: 240,
+            colorDark: '#0f0d2e',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        }
+      }, 100);
       lucide.createIcons();
     }
 
