@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QR Code Test</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+    .test { border: 1px solid #ccc; padding: 20px; margin: 10px 0; border-radius: 8px; }
+    h2 { margin-top: 0; }
+    #qrcode { border: 2px solid #6a2ea6; padding: 10px; border-radius: 8px; display: inline-block; }
+    .result { padding: 10px; margin-top: 10px; border-radius: 4px; }
+    .pass { background: #e8f5e9; color: #2e7d32; }
+    .fail { background: #ffebee; color: #c62828; }
+  </style>
+</head>
+<body>
+  <h1>QR Code Generation Test</h1>
+
+  <div class="test">
+    <h2>Test 1: QRCode Library Loaded</h2>
+    <div id="test1" class="result"></div>
+  </div>
+
+  <div class="test">
+    <h2>Test 2: Generate QR Code</h2>
+    <div id="qrcode"></div>
+    <div id="test2" class="result"></div>
+  </div>
+
+  <div class="test">
+    <h2>Test 3: Mobile Viewport Simulation (375x812)</h2>
+    <div id="test3" class="result"></div>
+  </div>
+
+  <script>
+    // Test 1: Check if QRCode is available
+    const test1 = document.getElementById('test1');
+    if (window.QRCode) {
+      test1.className = 'result pass';
+      test1.innerHTML = '✅ QRCode library loaded successfully';
+    } else {
+      test1.className = 'result fail';
+      test1.innerHTML = '❌ QRCode library NOT loaded';
+    }
+
+    // Test 2: Generate a QR code
+    const test2 = document.getElementById('test2');
+    try {
+      const testPayload = 'Ms. Linh Pham|linh.pham@sponsor.example';
+      new QRCode(document.getElementById('qrcode'), {
+        text: testPayload,
+        width: 240,
+        height: 240,
+        colorDark: '#0f0d2e',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+      test2.className = 'result pass';
+      test2.innerHTML = `✅ QR Code generated successfully<br><small>Payload: "${testPayload}"</small>`;
+    } catch (e) {
+      test2.className = 'result fail';
+      test2.innerHTML = `❌ Error generating QR: ${e.message}`;
+    }
+
+    // Test 3: Check responsive CSS
+    const test3 = document.getElementById('test3');
+    const style = window.getComputedStyle(document.documentElement);
+    // We can't easily test viewport, but we can verify the CSS was loaded
+    const hasResponsiveCss = document.querySelector('style').textContent.includes('max-width:720px');
+    if (hasResponsiveCss) {
+      test3.className = 'result pass';
+      test3.innerHTML = '✅ Responsive CSS for mobile (720px breakpoint) is present';
+    } else {
+      test3.className = 'result fail';
+      test3.innerHTML = '❌ Mobile CSS not found';
+    }
+
+    // Summary
+    setTimeout(() => {
+      const results = document.querySelectorAll('.pass');
+      document.body.innerHTML += `<div class="test" style="background: #f0f0f0;"><h3>Summary: ${results.length}/3 tests passed ✅</h3></div>`;
+    }, 100);
+  </script>
+</body>
+</html>

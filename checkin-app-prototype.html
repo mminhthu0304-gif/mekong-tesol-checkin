@@ -1,0 +1,2316 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mekong TESOL Check-in App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root{
+      --p:#6a2ea6; --p-dark:#5420a0; --p-light:#8b4cc7;
+      --i:#2703a6; --i-dark:#1d0280;
+      --g:#dd9a4a; --g-light:#edd66d; --g-dark:#c48a38;
+      --pk:#f2b0fc; --bl:#b0daff; --yl:#edd66d;
+      --bg-deep:#201e59; --bg-plum:#3a1f73; --bg-paper:#faf8ff;
+      --ink-900:#0f0d2e; --ink-700:#2a2850; --ink-500:#5a5878; --ink-300:#9e9cc0;
+      --line:#e4e1f2; --line-light:#f2f0fa;
+      --grad-dark:linear-gradient(135deg,#0f0d2e 0%,#201e59 40%,#3a1f73 70%,#6a2ea6 100%);
+      --grad-mid:linear-gradient(135deg,#201e59 0%,#3a1f73 50%,#6a2ea6 100%);
+      --grad-gold:linear-gradient(90deg,#dd9a4a,#edd66d);
+      --r-sm:8px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+      --shadow-xs:0 1px 3px rgba(15,13,46,.07);
+      --shadow-sm:0 4px 12px rgba(15,13,46,.09);
+      --shadow-md:0 8px 28px rgba(15,13,46,.12);
+      --shadow-lg:0 20px 56px rgba(15,13,46,.18);
+      --shadow-glow:0 8px 32px rgba(106,46,166,.32);
+      --ok:#1a8f45; --ok-soft:#edf9f0; --warn:#b66a00; --warn-soft:#fff7e7; --bad:#b4235a; --bad-soft:#fff0f6;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%;background:var(--bg-paper)}
+    body{font-family:'Source Sans 3',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:var(--ink-900);line-height:1.5;-webkit-font-smoothing:antialiased}
+    h1,h2,h3,h4{font-family:'Sora',sans-serif;color:var(--ink-900);letter-spacing:0}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    [hidden]{display:none!important}
+
+    .app{display:grid;grid-template-columns:268px minmax(0,1fr);min-height:100vh;transition:grid-template-columns .18s ease}
+    .app.sidebar-collapsed{grid-template-columns:84px minmax(0,1fr)}
+    .sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:linear-gradient(180deg,#0f0d2e 0%,#1a1840 58%,#201e59 100%);border-right:1px solid rgba(255,255,255,.06);padding:24px 18px 32px;color:#fff}
+    .sidebar-toggle{width:100%;margin-bottom:14px}
+    .brand{display:flex;gap:12px;align-items:center;margin-bottom:24px;padding:0 6px}
+    .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#4a1fc8 0%,#6a2ea6 55%,#dd9a4a 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px rgba(255,255,255,.12),var(--shadow-md);font-family:'Sora';font-weight:800;font-size:13px;color:#fff;flex:none}
+    .brand-name{font-family:'Sora';font-weight:700;font-size:14.5px;line-height:1.15}
+    .brand-name small{display:block;font-weight:400;color:var(--bl);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+    .role-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-md);padding:14px;margin-bottom:18px}
+    .role-card label{display:block;font-family:'Sora';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(220,215,255,.78);margin-bottom:8px}
+    .role-card select{width:100%;border:1px solid rgba(255,255,255,.16);background:#17143c;color:#fff;border-radius:10px;padding:10px 12px;outline:none}
+    .role-email{margin-top:8px;color:var(--bl);font-size:12px;word-break:break-word}
+    .nav-title{font-family:'Sora';font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(220,215,255,.55);margin:18px 10px 8px}
+    .nav button{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border:0;border-radius:9px;background:transparent;color:rgba(210,205,255,.78);text-align:left;font-size:14px;transition:background .15s,color .15s}
+    .nav button:hover{background:rgba(255,255,255,.06);color:#fff}
+    .nav button.active{background:linear-gradient(90deg,rgba(106,46,166,.55),rgba(106,46,166,0));color:#fff;border-left:2px solid var(--pk);padding-left:10px}
+    .nav button i{width:18px;height:18px;flex:none}
+    .nav button .count{margin-left:auto;background:rgba(242,176,252,.15);color:var(--pk);border-radius:99px;font-size:10px;padding:1px 6px;font-weight:700}
+    .app.sidebar-collapsed .sidebar{padding:20px 12px}
+    .app.sidebar-collapsed .brand{justify-content:center;padding:0;margin-bottom:16px}
+    .app.sidebar-collapsed .brand-name,.app.sidebar-collapsed .role-card,.app.sidebar-collapsed .nav-title,.app.sidebar-collapsed .nav button span:not(.count){display:none}
+    .app.sidebar-collapsed .nav button{justify-content:center;padding:12px}
+    .app.sidebar-collapsed .nav button.active{padding-left:12px;border-left:0;box-shadow:inset 3px 0 0 var(--pk)}
+    .app.sidebar-collapsed .nav button .count{position:absolute;margin-left:26px;margin-top:-24px}
+    .app.sidebar-collapsed .sidebar-bottom .u-info,.app.sidebar-collapsed .sidebar-bottom .logout-label{display:none}
+    .app.sidebar-collapsed .sidebar-bottom{padding:0 0 8px}
+    .app.sidebar-collapsed .sidebar-bottom .logout-btn{justify-content:center;padding:10px;border-radius:10px;width:44px;margin:0 auto}
+    .sidebar{display:flex;flex-direction:column}
+    .sidebar-nav-wrap{flex:1;overflow-y:auto;overflow-x:hidden}
+    .sidebar-bottom{padding:12px 0 4px;border-top:1px solid rgba(255,255,255,.09);margin-top:auto}
+
+    .main{min-width:0}
+    .topbar{position:sticky;top:0;z-index:20;background:rgba(250,248,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:14px 28px;display:flex;align-items:center;gap:16px;justify-content:space-between}
+    .topbar h1{font-size:18px;font-weight:800}
+    .topbar .sub{font-size:13px;color:var(--ink-500)}
+    .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .content{padding:28px;max-width:1440px;margin:0 auto}
+
+    .view{display:none}
+    .view.active{display:block}
+    .grid{display:grid;gap:18px}
+    .grid-2{grid-template-columns:minmax(0,1.1fr) minmax(360px,.9fr)}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-xs);padding:20px}
+    .card-tight{padding:16px}
+    .panel-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .panel-title h2{font-size:18px;font-weight:800}
+    .panel-title p{font-size:13px;color:var(--ink-500);margin-top:2px}
+    .eyebrow{font-family:'Sora';font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--p);margin-bottom:5px}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:11px 16px;border-radius:var(--r-md);font-family:'Sora';font-weight:700;font-size:14px;border:0;text-decoration:none;line-height:1;transition:transform .15s,box-shadow .15s,background .15s,color .15s}
+    .btn i{width:18px;height:18px}
+    .btn-primary{background:linear-gradient(135deg,var(--p-light),var(--p));color:#fff;box-shadow:var(--shadow-glow)}
+    .btn-indigo{background:linear-gradient(135deg,#4a1fc8,var(--i));color:#fff;box-shadow:0 8px 22px rgba(39,3,166,.25)}
+    .btn-gold{background:var(--grad-gold);color:#1a0d00;box-shadow:0 8px 22px rgba(221,154,74,.28)}
+    .btn-ghost{background:#fff;color:var(--p);border:1.5px solid var(--p)}
+    .btn-glass{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.14)}
+    .btn-soft{background:var(--line-light);color:var(--ink-700);border:1px solid var(--line)}
+    .btn-danger{background:#fff;color:var(--bad);border:1.5px solid #f0b7cf}
+    .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+    .btn:not(:disabled):hover{transform:translateY(-1px)}
+    .btn-sm{min-height:34px;padding:8px 12px;font-size:12.5px;border-radius:10px}
+    .icon-btn{width:38px;height:38px;padding:0;border-radius:10px}
+
+    .field{display:flex;flex-direction:column;gap:7px}
+    .field label{font-family:'Sora';font-weight:700;font-size:12px;color:var(--ink-700)}
+    .field small{font-size:12px;color:var(--ink-500)}
+    .input,.select,.textarea{width:100%;border:1.5px solid var(--line);border-radius:var(--r-md);background:#fff;color:var(--ink-900);outline:none;padding:12px 14px;font-size:15px;transition:border .15s,box-shadow .15s}
+    .textarea{min-height:86px;resize:vertical}
+    .input:focus,.select:focus,.textarea:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(106,46,166,.12)}
+    .search-box{display:grid;grid-template-columns:1fr auto;gap:10px}
+    .search-input-wrap{position:relative}
+    .search-input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--ink-300)}
+    .search-input-wrap .input{padding-left:44px;min-height:52px;font-size:17px}
+
+    .scanner{background:var(--grad-dark);border-radius:var(--r-lg);padding:18px;color:#fff;min-height:400px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow-lg)}
+    .scanner-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .scanner-head h2{color:#fff;font-size:18px;margin:0}
+    .scanner-frame{position:relative;flex:1;min-height:280px;border-radius:var(--r-md);overflow:hidden;background:#090822;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;aspect-ratio:4/5;max-width:100%;box-shadow:inset 0 0 20px rgba(0,0,0,.6)}
+    .scanner-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .scanner-placeholder{text-align:center;color:rgba(230,225,255,.78);padding:20px;font-size:14px}
+    .scanner-placeholder i{width:48px;height:48px;color:var(--bl);margin-bottom:12px;display:block}
+    .scanner-placeholder div:first-of-type{font-family:'Sora';font-weight:800;margin-bottom:6px;font-size:16px}
+    .scan-corners{position:absolute;inset:20px;pointer-events:none}
+    .scan-corners span{position:absolute;width:48px;height:48px;border:3px solid var(--pk);box-shadow:0 0 10px rgba(242,176,252,.4)}
+    .scan-corners .tl{top:0;left:0;border-right:0;border-bottom:0;border-radius:12px 0 0 0}
+    .scan-corners .tr{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 12px 0 0}
+    .scan-corners .bl{bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 12px}
+    .scan-corners .br{bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 12px 0}
+    .scanner-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+    .person-card{display:grid;gap:16px}
+    .person-empty{border:1px dashed var(--line);border-radius:var(--r-lg);padding:32px;text-align:center;color:var(--ink-500);background:var(--line-light)}
+    .person-top{display:flex;gap:16px;align-items:flex-start}
+    .avatar{width:62px;height:62px;border-radius:18px;background:linear-gradient(135deg,var(--p-light),var(--i));color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:800;font-size:20px;flex:none}
+    .person-name{font-size:34px;font-weight:800;line-height:1.05;margin-bottom:10px}
+    .meta{display:flex;flex-wrap:wrap;gap:10px;color:var(--ink-700);font-size:17px;font-weight:600}
+    .meta span{display:inline-flex;gap:5px;align-items:center}
+    .meta i{width:15px;height:15px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:var(--r-pill);font-family:'Sora';font-weight:700;font-size:11.5px;border:1px solid transparent;white-space:nowrap}
+    .group-chip-large{font-size:18px;padding:9px 15px;border-radius:14px}
+    .group-chip-large .chip-dot{width:10px;height:10px}
+    .status-chip-small{font-size:10.5px;padding:3px 8px}
+    .chip-dot{width:8px;height:8px;border-radius:50%}
+    .chip.status-ok{background:var(--ok-soft);color:var(--ok);border-color:#bfe9ca}
+    .chip.status-warn{background:var(--warn-soft);color:var(--warn);border-color:#f2d79b}
+    .chip.status-bad{background:var(--bad-soft);color:var(--bad);border-color:#f0b7cf}
+    .info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .info-cell{background:var(--line-light);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+    .info-cell b{display:block;font-family:'Sora';font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-500);margin-bottom:3px}
+    .info-cell span{font-size:13.5px;color:var(--ink-900)}
+    .note-box{border-left:5px solid var(--g);background:#fff8e8;border-radius:0 14px 14px 0;padding:18px 20px;color:#5c3b10;font-size:19px;font-weight:700;line-height:1.45}
+    .note-box b{font-family:'Sora';font-size:13px;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px}
+    .person-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+    .results{display:grid;gap:10px;max-height:420px;overflow:auto}
+    .result-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:var(--r-md);background:#fff;text-align:left}
+    .result-row:hover{border-color:var(--p-light);box-shadow:var(--shadow-sm)}
+    .result-row.active{border-color:var(--p);background:#fdf8ff}
+    .result-name{font-family:'Sora';font-weight:800;font-size:15px;margin-bottom:3px}
+    .result-sub{font-size:13px;color:var(--ink-500)}
+
+    .stat{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;box-shadow:var(--shadow-xs)}
+    .stat .label{font-family:'Sora';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-500);margin-bottom:8px}
+    .stat .num{font-family:'Sora';font-weight:800;font-size:34px;line-height:1;color:var(--p)}
+    .stat .hint{font-size:13px;color:var(--ink-500);margin-top:8px}
+    .progress{height:10px;background:var(--line-light);border-radius:var(--r-pill);overflow:hidden;margin-top:12px}
+    .progress span{display:block;height:100%;background:linear-gradient(90deg,var(--p),var(--g));border-radius:inherit}
+
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:var(--r-lg);background:#fff}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+    th{background:var(--line-light);font-family:'Sora';font-weight:700;color:var(--ink-700);font-size:12px;letter-spacing:.04em}
+    tr:last-child td{border-bottom:none}
+    tbody tr:hover td{background:#fdfbff}
+
+    .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .segmented{display:inline-flex;padding:4px;background:var(--line-light);border:1px solid var(--line);border-radius:12px;gap:3px}
+    .segmented button{border:0;background:transparent;border-radius:9px;padding:8px 12px;font-family:'Sora';font-size:12.5px;font-weight:700;color:var(--ink-500)}
+    .segmented button.active{background:#fff;color:var(--p);box-shadow:var(--shadow-xs)}
+
+    .modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(15,13,46,.5);display:none;align-items:center;justify-content:center;padding:18px}
+    .modal-backdrop.active{display:flex}
+    .modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:var(--r-xl);box-shadow:var(--shadow-lg);border:1px solid var(--line)}
+    .modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:20px 22px;border-bottom:1px solid var(--line);background:var(--line-light)}
+    .modal-head h2{font-size:18px}
+    .modal-body{padding:22px}
+    .modal-foot{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;padding:16px 22px;border-top:1px solid var(--line);background:#fff}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .form-grid .full{grid-column:1/-1}
+
+    .guest-shell{max-width:920px;margin:0 auto}
+    .guest-header{background:var(--grad-dark);border-radius:var(--r-xl);color:#fff;padding:32px;margin-bottom:20px;box-shadow:var(--shadow-lg)}
+    .guest-header h2{color:#fff;font-size:30px;margin-bottom:8px}
+    .guest-header p{color:rgba(210,205,255,.86);max-width:70ch}
+
+    .toast{position:fixed;right:22px;bottom:22px;z-index:200;display:grid;gap:10px}
+    .toast-item{background:#fff;border:1px solid var(--line);border-left:4px solid var(--p);box-shadow:var(--shadow-lg);border-radius:12px;padding:12px 14px;min-width:280px;max-width:380px}
+    .toast-item b{display:block;font-family:'Sora';font-size:13px;margin-bottom:2px}
+    .toast-item span{font-size:13px;color:var(--ink-500)}
+
+    .qr-preview{display:grid;place-items:center;gap:20px;padding:24px;border:2px solid var(--line);border-radius:var(--r-lg);background:#fff;box-shadow:0 4px 16px rgba(15,13,46,.08)}
+    .qr-preview #qrcode{display:flex;justify-content:center;align-items:center}
+    .qr-preview #qrcode canvas{max-width:280px;width:100%;height:auto;padding:16px;background:#fff;border:3px solid var(--p);border-radius:16px;box-shadow:0 8px 24px rgba(106,46,166,.15)}
+    .qr-preview h3{font-size:18px;font-weight:800;color:var(--ink-900);margin:0}
+    .qr-preview > div:nth-child(2){text-align:center;width:100%}
+    .qr-preview-email{font-size:14px;color:var(--ink-500);margin-bottom:12px;word-break:break-word}
+    .scan-summary{display:grid;grid-template-columns:76px 1fr;gap:16px;align-items:start}
+    .import-review{display:grid;gap:12px}
+    .duplicate-card{border:1px solid var(--line);border-left:5px solid var(--warn);border-radius:14px;padding:14px;background:#fffaf0}
+    .duplicate-card h3{font-size:15px;margin-bottom:6px}
+    .duplicate-card .dup-meta{font-size:13px;color:var(--ink-700);display:grid;gap:3px;margin-bottom:10px}
+    .duplicate-card .dup-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .f-checkbox{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:700;color:var(--ink-700)}
+    .qr-box{width:160px;height:160px;background:#fff;border:3px solid var(--p);border-radius:14px;padding:12px;position:relative;box-shadow:0 4px 12px rgba(106,46,166,.12)}
+    .qr-inner{width:100%;height:100%;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f0f0f0}
+    .qr-corner{position:absolute;width:32px;height:32px;border:3px solid var(--p)}
+    .qr-corner.tl{top:4px;left:4px;border-right:0;border-bottom:0;border-radius:6px 0 0 0}
+    .qr-corner.tr{top:4px;right:4px;border-left:0;border-bottom:0;border-radius:0 6px 0 0}
+    .qr-corner.bl{bottom:4px;left:4px;border-right:0;border-top:0;border-radius:0 0 0 6px}
+
+    @media(max-width:1100px){
+      .app{grid-template-columns:1fr}
+      .app.sidebar-collapsed{grid-template-columns:1fr}
+      .sidebar{position:static;height:auto}
+      .nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+      .nav-title{grid-column:1/-1}
+      .app.sidebar-collapsed .brand-name,.app.sidebar-collapsed .role-card,.app.sidebar-collapsed .nav-title,.app.sidebar-collapsed .nav button span:not(.count){display:block}
+      .app.sidebar-collapsed .nav button{justify-content:flex-start}
+      .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+      .topbar{position:static}
+    }
+    @media(max-width:720px){
+      .content,.topbar{padding:18px}
+      .nav{grid-template-columns:1fr}
+      .app.sidebar-collapsed .sidebar{padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+      .app.sidebar-collapsed .sidebar-toggle{margin:0;grid-column:1/-1}
+      .app.sidebar-collapsed .brand{margin:0;justify-content:flex-start}
+      .app.sidebar-collapsed .brand-name{display:block}
+      .app.sidebar-collapsed .role-card,.app.sidebar-collapsed .nav,.app.sidebar-collapsed .nav-title{display:none}
+      .form-grid,.info-grid{grid-template-columns:1fr}
+      .search-box{grid-template-columns:1fr}
+      .person-top{flex-direction:column}
+      .person-name{font-size:28px;margin-bottom:8px}
+      .group-chip-large{font-size:16px;width:100%;justify-content:center;padding:12px 14px}
+      .meta{font-size:14px;display:grid;gap:10px}
+      .meta span{display:flex;gap:4px}
+      .scanner{min-height:480px;padding:14px}
+      .scanner-head{flex-direction:column;align-items:flex-start;gap:8px}
+      .scanner-head h2{font-size:16px}
+      .scanner-frame{aspect-ratio:9/12;min-height:320px}
+      .scan-corners{inset:12px}
+      .scan-corners span{width:36px;height:36px;border-width:2px}
+      .scanner-actions{flex-direction:column}
+      .scanner-actions .btn{width:100%;margin:0}
+      .person-actions .btn{width:100%;font-size:13px;min-height:48px}
+      .note-box{font-size:14px;padding:12px 14px;margin-bottom:12px}
+      .scan-summary{grid-template-columns:1fr;gap:12px}
+      .guest-header{padding:20px}
+      .guest-header h2{font-size:22px}
+      .qr-preview{padding:16px;gap:16px;border-radius:12px}
+      .qr-preview #qrcode canvas{max-width:240px}
+      .qr-preview h3{font-size:16px}
+      .qr-preview-email{font-size:12px}
+      th,td{padding:8px 10px;font-size:13px}
+      .modal{width:min(95vw,100%);border-radius:16px}
+      .modal-body{padding:16px}
+      .modal-head{padding:16px}
+      .card{padding:16px;border-radius:12px}
+    }
+    /* ── Login overlay ── */
+    .login-overlay{position:fixed;inset:0;z-index:400;background:var(--grad-dark);display:flex;align-items:center;justify-content:center;padding:20px}
+    .login-card{background:#fff;border-radius:var(--r-xl);padding:44px 40px;width:min(460px,100%);box-shadow:var(--shadow-lg)}
+    .login-logo{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,#4a1fc8 0%,#6a2ea6 55%,#dd9a4a 100%);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:800;font-size:22px;color:#fff;margin:0 auto 22px;box-shadow:var(--shadow-glow)}
+    .login-title{font-family:'Sora';font-size:22px;font-weight:800;text-align:center;margin-bottom:6px;color:var(--ink-900)}
+    .login-sub{font-size:14px;color:var(--ink-500);text-align:center;margin-bottom:28px;line-height:1.55}
+    .login-err{color:var(--bad);background:var(--bad-soft);border:1px solid #f0b7cf;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:12px;display:none}
+    .login-err.show{display:block}
+    .login-hint{font-size:12px;color:var(--ink-300);text-align:center;margin-top:16px}
+    /* ── User badge in sidebar ── */
+    .user-badge{display:flex;gap:10px;align-items:center}
+    .u-avatar{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#4a1fc8,#6a2ea6);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:800;font-size:14px;color:#fff;flex:none}
+    .u-info{min-width:0;flex:1}
+    .u-name{font-family:'Sora';font-weight:700;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .u-role-badge{font-size:10.5px;color:var(--bl);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+    .logout-btn{margin-top:9px;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:rgba(210,205,255,.7);border-radius:9px;padding:7px 10px;font-size:12px;cursor:pointer;font-family:'Sora';font-weight:600;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+    .logout-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+  </style>
+</head>
+<body>
+  <!-- Login overlay -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-logo">MT</div>
+      <h1 class="login-title">Mekong TESOL Check-in</h1>
+      <p class="login-sub">Nhập địa chỉ email của bạn để xác nhận quyền truy cập.</p>
+      <div class="field">
+        <label for="loginEmailInput">Email đăng nhập</label>
+        <input class="input" id="loginEmailInput" type="email" placeholder="your@email.com" autocomplete="email" style="min-height:52px;font-size:16px">
+      </div>
+      <div id="loginErrBox" class="login-err"></div>
+      <button class="btn btn-primary" id="loginSubmitBtn" style="width:100%;margin-top:18px;min-height:50px;font-size:16px">
+        <i data-lucide="log-in"></i>Đăng nhập
+      </button>
+      <p class="login-hint" id="loginHintText">Demo: admin@mekongtesol.vn · staff01@mekongtesol.vn</p>
+    </div>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar">
+      <button class="btn btn-glass sidebar-toggle" id="sidebarToggle" title="Thu gọn menu"><i data-lucide="panel-left-close"></i><span>Thu gọn menu</span></button>
+      <div class="brand">
+        <div class="logo">MT</div>
+        <div class="brand-name">Mekong TESOL<small>Check-in · 2026</small></div>
+      </div>
+
+      <div class="role-card" id="userRoleCard">
+        <label style="display:block;font-family:'Sora';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(220,215,255,.78);margin-bottom:8px">Tài khoản</label>
+        <div class="user-badge">
+          <div class="u-avatar" id="uAvatar">MT</div>
+          <div class="u-info">
+            <div class="u-name" id="uName">Chưa đăng nhập</div>
+            <div class="u-role-badge" id="uRoleBadge">–</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-nav-wrap">
+        <nav class="nav" id="mainNav">
+          <div class="nav-title">Operations</div>
+          <button data-view="checkin" class="active" data-roles="admin,staff"><i data-lucide="scan-line"></i><span>Check-in</span></button>
+          <button data-view="lists" data-roles="admin,staff"><i data-lucide="list-checks"></i><span>Danh sách</span> <span class="count" id="navOpenCount">0</span></button>
+          <button data-view="pre-notes" data-roles="admin,staff"><i data-lucide="notebook-tabs"></i><span>Ghi chú trước</span></button>
+          <button data-view="post-notes" data-roles="admin,staff"><i data-lucide="message-square-text"></i><span>Ghi chú sau</span></button>
+          <button data-view="guest" data-roles="admin,staff,guest"><i data-lucide="user-plus"></i><span>Guest form</span></button>
+          <div class="nav-title">Admin</div>
+          <button data-view="dashboard" data-roles="admin"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></button>
+          <button data-view="qr" data-roles="admin"><i data-lucide="qr-code"></i><span>QR code</span></button>
+          <button data-view="logs" data-roles="admin"><i data-lucide="history"></i><span>Audit</span></button>
+          <button data-view="users" data-roles="admin"><i data-lucide="users"></i><span>Người dùng</span></button>
+          <button data-view="settings" data-roles="admin"><i data-lucide="settings"></i><span>Backup & Export</span></button>
+        </nav>
+      </div>
+
+      <!-- Logout fixed at bottom of sidebar -->
+      <div class="sidebar-bottom">
+        <button class="logout-btn" id="logoutBtn" title="Đăng xuất">
+          <i data-lucide="log-out"></i>
+          <span class="logout-label">Đăng xuất</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="viewTitle">Internal check-in</h1>
+          <div class="sub" id="viewSubtitle">Scan QR, search manually, confirm attendance.</div>
+        </div>
+        <div class="top-actions">
+          <button class="btn btn-soft btn-sm" id="fullscreenBtn"><i data-lucide="maximize-2"></i>Toàn màn hình</button>
+          <button class="btn btn-gold btn-sm" id="backupQuickBtn" data-admin-only><i data-lucide="cloud-upload"></i>Backup</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="view active" id="view-checkin">
+          <div class="grid grid-2">
+            <div class="grid">
+              <div class="scanner">
+                <div class="scanner-head">
+                  <div>
+                    <h2>QR scanner</h2>
+                    <div style="color:rgba(210,205,255,.78);font-size:13px">Camera laptop, điện thoại hoặc tablet</div>
+                  </div>
+                  <span class="chip" style="background:rgba(176,218,255,.12);color:var(--bl);border-color:rgba(176,218,255,.28)"><span class="chip-dot" style="background:var(--bl)"></span>Ready</span>
+                </div>
+                <div class="scanner-frame">
+                  <video id="cameraVideo" autoplay playsinline muted hidden></video>
+                  <div class="scanner-placeholder" id="cameraPlaceholder">
+                    <i data-lucide="camera"></i>
+                    <div style="font-family:'Sora';font-weight:800;margin-bottom:4px">Bật camera để quét QR</div>
+                    <div>Prototype này có nút mô phỏng quét để kiểm tra luồng UI.</div>
+                  </div>
+                  <div class="scan-corners"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
+                </div>
+                <div class="scanner-actions">
+                  <button class="btn btn-primary" id="toggleCameraBtn"><i data-lucide="video"></i>Bật camera</button>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="panel-title">
+                  <div>
+                    <h2>Tìm thủ công</h2>
+                    <p>Gõ trong một ô, hệ thống tìm theo tên, email, SĐT, nơi công tác, nhóm và ghi chú.</p>
+                  </div>
+                </div>
+                <div class="search-box">
+                  <div class="search-input-wrap">
+                    <i data-lucide="search"></i>
+                    <input class="input" id="searchInput" placeholder="Nhập tên, email, SĐT, nơi công tác, ghi chú...">
+                  </div>
+                  <button class="btn btn-indigo" id="clearSearchBtn"><i data-lucide="x"></i>Xóa</button>
+                </div>
+                <div class="results" id="searchResults" style="margin-top:14px"></div>
+              </div>
+            </div>
+
+            <div class="grid">
+              <div class="card">
+                <div class="panel-title">
+                  <div>
+                    <h2>Thông tin check-in</h2>
+                  </div>
+                </div>
+                <div id="selectedPerson" class="person-card"></div>
+              </div>
+
+              <div class="card">
+                <button class="btn btn-primary" id="openAddBtn" style="width:100%;min-height:58px"><i data-lucide="user-plus"></i>Thêm thông tin</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-pre-notes">
+          <div class="card">
+            <div class="panel-title">
+              <div>
+                <div class="eyebrow">Check-in priority</div>
+                <h2>Người có ghi chú trước hội nghị</h2>
+                <p>Danh sách các lưu ý BTC cần nhìn trước khi xác nhận check-in.</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Mã</th><th>Họ tên</th><th>Nhóm</th><th>Thông tin</th><th>Ghi chú trước hội nghị</th><th>Thao tác</th></tr></thead>
+                <tbody id="preNotesTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-post-notes">
+          <div class="card">
+            <div class="panel-title">
+              <div>
+                <div class="eyebrow">After check-in</div>
+                <h2>Người có ghi chú sau check-in</h2>
+                <p>Danh sách các ghi chú phát sinh khi staff xử lý tại quầy.</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Mã</th><th>Họ tên</th><th>Nhóm</th><th>Check-in</th><th>Ghi chú sau check-in</th><th>Thao tác</th></tr></thead>
+                <tbody id="postNotesTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-lists">
+          <div class="card">
+            <div class="panel-title">
+              <div>
+                <div class="eyebrow">Staff operations</div>
+                <h2>Danh sách đã check-in và chưa check-in</h2>
+                <p>Lọc theo trạng thái, nhóm và tìm kiếm nhanh trong danh sách.</p>
+              </div>
+              <button class="btn btn-primary" id="openAddBtn2"><i data-lucide="user-plus"></i>Thêm người</button>
+              <button class="btn btn-danger" id="deleteSelectedBtn" data-roles="admin" disabled><i data-lucide="trash-2"></i>Xóa đã chọn</button>
+            </div>
+            <div class="filters">
+              <div class="segmented" id="statusFilter">
+                <button class="active" data-status="all">Tất cả</button>
+                <button data-status="Checked-in">Đã check-in</button>
+                <button data-status="Not checked-in">Chưa check-in</button>
+              </div>
+              <select class="select" id="groupFilter" style="max-width:240px"></select>
+              <input class="input" id="listSearch" placeholder="Tìm trong danh sách..." style="max-width:320px">
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-roles="admin" style="width:42px"><input type="checkbox" id="selectAllParticipants" aria-label="Chọn tất cả"></th><th>Họ tên</th><th>Nhóm</th><th>Nơi công tác</th><th>media_consent</th><th>Check-in</th><th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="participantsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-dashboard">
+          <div class="grid grid-4" id="dashboardStats"></div>
+          <div class="grid grid-2" style="margin-top:18px">
+            <div class="card">
+              <div class="panel-title">
+                <div><h2>Check-in theo nhóm</h2><p>Số đã check-in / tổng số theo từng nhóm.</p></div>
+              </div>
+              <div id="groupBars" class="grid"></div>
+            </div>
+            <div class="card">
+              <div class="panel-title">
+                <div><h2>Hoạt động gần đây</h2><p>Log thao tác mới nhất.</p></div>
+              </div>
+              <div id="recentLogs" class="results"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-guest">
+          <div class="guest-shell">
+            <div class="guest-header">
+              <div class="eyebrow" style="color:var(--bl)">Guest form</div>
+              <h2>Submit attendee information</h2>
+            </div>
+            <div class="card">
+              <form id="guestForm" class="form-grid">
+                <div class="field">
+                  <label>Full name *</label>
+                  <input class="input" name="name" required placeholder="Nguyen Van A">
+                </div>
+                <div class="field">
+                  <label>Email *</label>
+                  <input class="input" name="email" type="email" required placeholder="name@example.com">
+                </div>
+                <div class="field">
+                  <label>Affiliation *</label>
+                  <input class="input" name="affiliation" required placeholder="University / Organization">
+                </div>
+                <div class="field">
+                  <label>Category *</label>
+                  <select class="select" name="group" required id="guestGroupSelect"></select>
+                </div>
+                <div class="field">
+                  <label>Phone</label>
+                  <input class="input" name="phone" placeholder="+84...">
+                </div>
+                <div class="field">
+                  <label>Position</label>
+                  <input class="input" name="title" placeholder="Lecturer, Representative...">
+                </div>
+                <div class="field full">
+                  <label>Note</label>
+                  <textarea class="textarea" name="note" placeholder="Any additional information..."></textarea>
+                </div>
+                <div class="full" style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
+                  <button type="reset" class="btn btn-soft"><i data-lucide="rotate-ccw"></i>Reset</button>
+                  <button type="submit" class="btn btn-primary"><i data-lucide="send"></i>Submit information</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-qr">
+          <div class="card">
+            <div class="panel-title">
+              <div>
+                <div class="eyebrow">Admin</div>
+                <h2>Quản lý QR code</h2>
+                <p>QR payload là chuỗi được mã hóa trong QR để app tìm đúng người khi quét. Định dạng hiện dùng: `full_name|email`, app ưu tiên email để đối chiếu.</p>
+              </div>
+              <div class="top-actions">
+                <button class="btn btn-gold" id="generateMissingBtn"><i data-lucide="qr-code"></i>Tạo QR còn thiếu</button>
+                <button class="btn btn-primary" id="generateAllBtn"><i data-lucide="sparkles"></i>Tạo hàng loạt</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Mã</th><th>Họ tên</th><th>Email</th><th>Nhóm</th><th>QR status</th><th>QR payload</th><th>Thao tác</th></tr>
+                </thead>
+                <tbody id="qrTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-logs">
+          <div class="card">
+            <div class="panel-title">
+              <div>
+                <div class="eyebrow">Audit trail</div>
+                <h2>Logs thao tác</h2>
+                <p>Mọi check-in, thêm, sửa, xóa, QR và backup đều được ghi log.</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Thời gian</th><th>User</th><th>Action</th><th>Target</th><th>Chi tiết</th></tr></thead>
+                <tbody id="logsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-settings">
+          <div class="grid grid-3">
+            <div class="card">
+              <div class="panel-title">
+                <div><h2>Backup & sao lưu</h2><p>Tạo bản sao Google Sheet trước các thao tác lớn.</p></div>
+              </div>
+              <div class="grid">
+                <div class="field">
+                  <label>Ngày on-site registration</label>
+                  <input class="input" id="onsiteDateInput" type="date">
+                  <small>Người được nhập thêm đúng ngày này sẽ có source là On-site Registration.</small>
+                </div>
+                <button class="btn btn-primary" id="backupBtn"><i data-lucide="cloud-upload"></i>Tạo backup thủ công</button>
+                <button class="btn btn-soft" id="scheduleBackupBtn"><i data-lucide="clock"></i>Mô phỏng backup định kỳ 30 phút</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="panel-title">
+                <div><h2>Export Excel</h2><p>Prototype xuất CSV, khi nối GAS sẽ tạo `.xlsx` hoặc Sheet copy.</p></div>
+              </div>
+              <div class="grid">
+                <button class="btn btn-gold" id="exportCheckedBtn"><i data-lucide="download"></i>Xuất danh sách đã check-in</button>
+                <button class="btn btn-indigo" id="exportAllBtn"><i data-lucide="file-spreadsheet"></i>Xuất toàn bộ danh sách</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="panel-title">
+                <div>
+                  <h2>Import Excel</h2>
+                  <p>Thêm dữ liệu vào các dòng còn trống, cảnh báo trùng email hoặc số điện thoại.</p>
+                </div>
+              </div>
+              <div class="grid">
+                <button class="btn btn-soft" id="downloadTemplateBtn"><i data-lucide="file-down"></i>Tải template</button>
+                <label class="btn btn-primary" for="importFileInput"><i data-lucide="file-up"></i>Import danh sách</label>
+                <input id="importFileInput" type="file" accept=".csv,.xlsx,.xls" hidden>
+                <div class="note-box" style="font-size:14px;font-weight:600;padding:12px 14px"><b>Payload là gì?</b> Payload là chuỗi dữ liệu được mã hóa trong QR, ví dụ `Ms. Linh Pham|linh.pham@sponsor.example`. Khi quét QR, app đọc payload để tìm đúng người trong sheet.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── User Management View (Admin only) ── -->
+        <section class="view" id="view-users">
+          <div class="content">
+            <div class="card">
+              <div class="panel-title">
+                <div>
+                  <h2>Quản lý người dùng</h2>
+                  <p>Thêm, chỉnh sửa và phân quyền tài khoản truy cập hệ thống.</p>
+                </div>
+                <button class="btn btn-primary" id="addUserBtn"><i data-lucide="user-plus"></i>Thêm người dùng</button>
+              </div>
+              <div id="usersTableWrap" style="overflow-x:auto">
+                <table class="table" id="usersTable">
+                  <thead><tr>
+                    <th>Tên</th>
+                    <th>Email</th>
+                    <th>Quyền</th>
+                    <th>Trạng thái</th>
+                    <th style="width:120px">Hành động</th>
+                  </tr></thead>
+                  <tbody id="usersTableBody">
+                    <tr><td colspan="5" style="text-align:center;color:var(--ink-400);padding:32px">Đang tải...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+  </div>
+
+  <div class="modal-backdrop" id="personModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="personModalTitle">Thêm người tham dự</h2>
+        <button class="btn btn-soft icon-btn" data-close-modal><i data-lucide="x"></i></button>
+      </div>
+      <form id="personForm">
+        <div class="modal-body">
+          <div class="form-grid">
+            <input type="hidden" name="id">
+            <div class="field"><label>Họ và tên *</label><input class="input" name="name" required></div>
+            <div class="field"><label>Email *</label><input class="input" name="email" type="email" required></div>
+            <div class="field"><label>Số điện thoại</label><input class="input" name="phone"></div>
+            <div class="field"><label>Đơn vị / Affiliation *</label><input class="input" name="affiliation" required></div>
+            <div class="field"><label>Nhóm chi tiết *</label><select class="select" name="detailedGroup" required></select></div>
+            <div class="field"><label>Nhóm chính</label><input class="input" name="mainGroup" readonly></div>
+            <div class="field"><label>Chức danh</label><input class="input" name="title"></div>
+            <div class="field"><label>on_site_status (system)</label><input class="input" name="source" readonly></div>
+            <div class="field"><label>title_other_text</label><input class="input" name="titleOtherText"></div>
+            <div class="field"><label>nationality</label><input class="input" name="nationality"></div>
+            <div class="field"><label>country</label><input class="input" name="country"></div>
+            <div class="field"><label>province</label><input class="input" name="province"></div>
+            <div class="field"><label>job</label><input class="input" name="job"></div>
+            <div class="field"><label>job_other_institution</label><input class="input" name="jobOtherInstitution"></div>
+            <div class="field"><label>institution</label><input class="input" name="institution"></div>
+            <div class="field"><label>years_expe</label><input class="input" name="yearsExperience"></div>
+            <div class="field"><label>first_attend</label><input class="input" name="firstAttend"></div>
+            <div class="field"><label>source</label><input class="input" name="sourceOriginal"></div>
+            <div class="field"><label>source_oth</label><input class="input" name="sourceOther"></div>
+            <div class="field"><label>media_consent</label><input class="input" name="mediaConsent"></div>
+            <div class="field"><label>ecert_cons</label><input class="input" name="ecertConsent"></div>
+            <div class="field"><label>post_conference</label><input class="input" name="postConference"></div>
+            <div class="field full"><label>notes</label><textarea class="textarea" name="notes"></textarea></div>
+            <div class="field full"><label>Ghi chú BTC trước check-in</label><textarea class="textarea" name="preNote"></textarea></div>
+            <div class="field full"><label>Ghi chú sau check-in</label><textarea class="textarea" name="postNote"></textarea></div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-soft" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-primary"><i data-lucide="save"></i>Lưu thông tin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="qrModal">
+    <div class="modal" style="width:min(520px,100%)">
+      <div class="modal-head">
+        <h2>QR code</h2>
+        <button class="btn btn-soft icon-btn" data-close-modal><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" id="qrModalBody"></div>
+      <div class="modal-foot">
+        <button class="btn btn-soft" data-close-modal>Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Add/Edit Modal -->
+  <div class="modal-backdrop" id="userModal">
+    <div class="modal" style="width:min(480px,100%)">
+      <div class="modal-head">
+        <h2 id="userModalTitle">Thêm người dùng</h2>
+        <button class="btn btn-soft icon-btn" data-close-modal><i data-lucide="x"></i></button>
+      </div>
+      <form id="userForm">
+        <div class="modal-body">
+          <div class="form-grid">
+            <input type="hidden" name="originalEmail">
+            <div class="field full">
+              <label>Họ và tên *</label>
+              <input class="input" name="userName" required placeholder="Nguyễn Văn A">
+            </div>
+            <div class="field full">
+              <label>Email Google *</label>
+              <input class="input" name="userEmail" type="email" required placeholder="email@gmail.com" id="userEmailInput">
+            </div>
+            <div class="field">
+              <label>Quyền *</label>
+              <select class="select" name="userRole" required>
+                <option value="admin">Admin</option>
+                <option value="check-in" selected>Check-in Staff</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Trạng thái</label>
+              <select class="select" name="userActive">
+                <option value="TRUE">Hoạt động</option>
+                <option value="FALSE">Vô hiệu hoá</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-soft" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-primary"><i data-lucide="save"></i>Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="scanModal">
+    <div class="modal" style="width:min(620px,100%)">
+      <div class="modal-head">
+        <h2>QR scan result</h2>
+        <button class="btn btn-soft icon-btn" data-close-modal><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" id="scanModalBody"></div>
+      <div class="modal-foot">
+        <button class="btn btn-soft" data-close-modal>Đóng</button>
+        <button class="btn btn-primary" id="scanConfirmBtn"><i data-lucide="badge-check"></i>Xác nhận check-in</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="importModal">
+    <div class="modal" style="width:min(920px,100%)">
+      <div class="modal-head">
+        <h2>Review import</h2>
+        <button class="btn btn-soft icon-btn" data-close-modal><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" id="importModalBody"></div>
+      <div class="modal-foot">
+        <button class="btn btn-soft" data-close-modal>Hủy</button>
+        <button class="btn btn-gold" id="skipDuplicatesBtn"><i data-lucide="list-x"></i>Import dòng không trùng</button>
+        <button class="btn btn-primary" id="importApprovedBtn"><i data-lucide="file-check-2"></i>Import dòng được duyệt</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const GROUPS = [
+      { main:'Participant', detail:'Participant', color:'#5aa7e8', text:'#0f0d2e' },
+      { main:'Delegate', detail:'Delegate', color:'#0f7895', text:'#ffffff' },
+      { main:'Presenter', detail:'Oral presenter', color:'#2703a6', text:'#ffffff' },
+      { main:'Presenter', detail:'Poster presenter', color:'#dd9a4a', text:'#1a0d00' },
+      { main:'Presenter', detail:'Workshop presenter', color:'#1a8f45', text:'#ffffff' },
+      { main:'Speaker', detail:'Invited speaker', color:'#6a2ea6', text:'#ffffff' },
+      { main:'Speaker', detail:'Keynote speaker', color:'#b4235a', text:'#ffffff' }
+    ];
+
+    const IMPORT_DETAIL_FIELDS = [
+      'titleOtherText','nationality','country','province','job','jobOtherInstitution','institution',
+      'yearsExperience','firstAttend','sourceOriginal','sourceOther','mediaConsent','ecertConsent',
+      'postConference','notes'
+    ];
+
+    const MOCK_USERS = [
+      {email:'admin@mekongtesol.vn', name:'Admin MT', role:'admin'},
+      {email:'staff01@mekongtesol.vn', name:'Check-in Staff', role:'staff'}
+    ];
+
+    const state = {
+      role:'guest',
+      currentUser: null,
+      activeView:'checkin',
+      selectedId:null,
+      listStatus:'all',
+      cameraStream:null,
+      qrDetector:null,
+      qrScanTimer:null,
+      lastQrPayload:'',
+      selectedDeleteIds:new Set(),
+      settings:{ onsiteDate:'2026-07-19' },
+      pendingImport:{ clean:[], duplicates:[] },
+      participants:[
+        {id:'MT2026-0001',name:'Assoc. Prof. Maria Santos',email:'maria.santos@example.edu',phone:'+63 900 111 222',affiliation:'University of the Philippines',title:'Keynote Speaker',mainGroup:'Speaker',detailedGroup:'Keynote speaker',source:'Pre-registered',status:'Not checked-in',checkinTime:'',checkinBy:'',method:'',counter:0,qrStatus:'Generated',qrPayload:'Assoc. Prof. Maria Santos|maria.santos@example.edu',preNote:'Ưu tiên hỗ trợ đón tiếp tại cửa chính. Có phiên keynote buổi sáng.',postNote:''},
+        {id:'MT2026-0002',name:'Dr. Tran Minh Anh',email:'minhanh.tran@example.vn',phone:'+84 912 333 444',affiliation:'Can Tho University',title:'Invited Speaker',mainGroup:'Speaker',detailedGroup:'Invited speaker',source:'Pre-registered',status:'Checked-in',checkinTime:'2026-07-19 07:42',checkinBy:'staff01@mekongtesol.vn',method:'QR',counter:1,qrStatus:'Generated',qrPayload:'Dr. Tran Minh Anh|minhanh.tran@example.vn',preNote:'Trao đổi với BTC về phòng speaker ready room.',postNote:'Đã nhận tài liệu.'},
+        {id:'MT2026-0003',name:'Le Thi Hong Nhung',email:'nhung.le@example.com',phone:'+84 988 555 101',affiliation:'Hue University',title:'Lecturer',mainGroup:'Presenter',detailedGroup:'Oral presenter',source:'Pre-registered',status:'Not checked-in',checkinTime:'',checkinBy:'',method:'',counter:0,qrStatus:'Not generated',qrPayload:'',preNote:'Có bài oral presentation phiên chiều.',postNote:''},
+        {id:'MT2026-0004',name:'Somchai Prasert',email:'somchai.p@example.ac.th',phone:'+66 81 222 3333',affiliation:'Chiang Mai University',title:'Workshop Facilitator',mainGroup:'Presenter',detailedGroup:'Workshop presenter',source:'Pre-registered',status:'Not checked-in',checkinTime:'',checkinBy:'',method:'',counter:0,qrStatus:'Error',qrPayload:'',preNote:'Cần hỗ trợ kỹ thuật projector.',postNote:''},
+        {id:'MT2026-0005',name:'Nguyen Van Khoa',email:'khoa.nguyen@example.vn',phone:'+84 903 777 888',affiliation:'Mekong TESOL Committee',title:'Logistics Staff',mainGroup:'Participant',detailedGroup:'Participant',source:'Pre-registered',status:'Checked-in',checkinTime:'2026-07-19 06:55',checkinBy:'admin@mekongtesol.vn',method:'Manual search',counter:1,qrStatus:'Generated',qrPayload:'Nguyen Van Khoa|khoa.nguyen@example.vn',preNote:'Phụ trách bàn số 2.',postNote:'Đã nhận bộ đàm.'},
+        {id:'MT2026-0006',name:'Ms. Linh Pham',email:'linh.pham@sponsor.example',phone:'+84 909 100 200',affiliation:'ELT Publishing Partner',title:'Sponsor Representative',mainGroup:'Delegate',detailedGroup:'Delegate',source:'Pre-registered',status:'Not checked-in',checkinTime:'',checkinBy:'',method:'',counter:0,qrStatus:'Generated',qrPayload:'Ms. Linh Pham|linh.pham@sponsor.example',preNote:'Khách mời sponsor, mời tới booth A sau check-in.',postNote:''},
+        {id:'MT2026-0007',name:'Dr. Phan Quoc Bao',email:'bao.phan@dept.example.vn',phone:'+84 977 222 909',affiliation:'Department of Education and Training',title:'Representative',mainGroup:'Delegate',detailedGroup:'Delegate',source:'Pre-registered',status:'Not checked-in',checkinTime:'',checkinBy:'',method:'',counter:0,qrStatus:'Generated',qrPayload:'Dr. Phan Quoc Bao|bao.phan@dept.example.vn',preNote:'Sắp xếp chỗ ngồi hàng đầu.',postNote:''},
+        {id:'MT2026-0008',name:'Mai Lan',email:'mailan.poster@example.com',phone:'+84 934 555 666',affiliation:'An Giang University',title:'Graduate Student',mainGroup:'Presenter',detailedGroup:'Poster presenter',source:'Pre-registered',status:'Not checked-in',checkinTime:'',checkinBy:'',method:'',counter:0,qrStatus:'Not generated',qrPayload:'',preNote:'Poster session khu vực B.',postNote:''}
+      ],
+      logs:[
+        {time:'2026-07-19 07:42',user:'staff01@mekongtesol.vn',action:'CHECK_IN',target:'MT2026-0002',detail:'QR check-in Dr. Tran Minh Anh'},
+        {time:'2026-07-19 06:55',user:'admin@mekongtesol.vn',action:'CHECK_IN',target:'MT2026-0005',detail:'Manual search check-in Nguyen Van Khoa'}
+      ],
+      users: []
+    };
+
+    const roleProfiles = {
+      admin:{ title:'Admin console', subtitle:'Full access: check-in, QR, logs, backup, import, export.' },
+      staff:{ title:'Internal check-in', subtitle:'Scan QR, search, add/edit participants, and review check-in lists.' },
+      guest:{ title:'Guest self-registration', subtitle:'Participants can submit their own information.' }
+    };
+
+    const viewMeta = {
+      checkin:['Internal check-in','Scan QR, search manually, confirm attendance.'],
+      lists:['Check-in lists','Review checked-in and not checked-in participants.'],
+      dashboard:['Dashboard','Live operational summary for the registration desk.'],
+      guest:['Guest view','Self-registration form without internal notes.'],
+      'pre-notes':['Pre-conference notes','Participants with organizer notes before check-in.'],
+      'post-notes':['Post check-in notes','Participants with notes added after check-in.'],
+      qr:['QR management','Generate, regenerate, delete and preview QR codes.'],
+      logs:['Audit logs','Review operational and data change logs.'],
+      users:['Người dùng hệ thống','Thêm, chỉnh sửa và phân quyền tài khoản truy cập.'],
+      settings:['Backup & export','Create backups and export participant lists.']
+    };
+
+    const $ = (selector, root=document) => root.querySelector(selector);
+    const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
+
+    function init(){
+      fillGroupSelects();
+      bindEvents();
+      if(window.innerWidth <= 720) $('.app').classList.add('sidebar-collapsed');
+      updateSidebarToggle();
+      applyRole(state.role || 'guest');
+      if(state.participants.length) selectPerson(state.participants[0].id);
+      renderAll();
+      lucide.createIcons();
+    }
+
+    /* ── Login functions (standalone mock – GAS version injected by build.js) ── */
+    function showLogin(){
+      const overlay = document.getElementById('loginOverlay');
+      if(overlay) overlay.style.display = 'flex';
+      const hint = document.getElementById('loginHintText');
+      if(hint) hint.style.display = '';
+      lucide.createIcons();
+    }
+
+    function hideLogin(){
+      const overlay = document.getElementById('loginOverlay');
+      if(overlay) overlay.style.display = 'none';
+    }
+
+    function showLoginError(msg){
+      const box = document.getElementById('loginErrBox');
+      if(box){ box.textContent = msg; box.classList.add('show'); }
+    }
+
+    function clearLoginError(){
+      const box = document.getElementById('loginErrBox');
+      if(box){ box.textContent = ''; box.classList.remove('show'); }
+    }
+
+    function loginSuccess(user){
+      state.currentUser = user;
+      state.role = (user.role || 'guest').toLowerCase();
+      updateUserBadge();
+      hideLogin();
+      applyRole(state.role);
+      if(state.participants.length) selectPerson(state.participants[0].id);
+      renderAll();
+      lucide.createIcons();
+    }
+
+    function updateUserBadge(){
+      const u = state.currentUser;
+      if(!u) return;
+      const nameEl = document.getElementById('uName');
+      const roleEl = document.getElementById('uRoleBadge');
+      const avatarEl = document.getElementById('uAvatar');
+      if(nameEl) nameEl.textContent = u.name || u.email;
+      if(avatarEl) avatarEl.textContent = initials(u.name || u.email);
+      const roleLabel = state.role === 'admin' ? 'Admin' : state.role === 'staff' ? 'Check-in Staff' : 'Guest';
+      if(roleEl) roleEl.textContent = roleLabel;
+    }
+
+    function logout(){
+      state.currentUser = null;
+      state.role = 'guest';
+      state.participants = [];
+      state.logs = [];
+      state.selectedId = null;
+      showLogin();
+      lucide.createIcons();
+    }
+
+    // Standalone mock login – replaced by GAS version in build.js
+    function attemptLogin(email){
+      clearLoginError();
+      const found = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase().trim());
+      if(found){
+        loginSuccess(found);
+      } else {
+        showLoginError('Email không có trong danh sách. Demo: admin@mekongtesol.vn hoặc staff01@mekongtesol.vn');
+      }
+    }
+
+    function bindLoginEvents(){
+      const btn = document.getElementById('loginSubmitBtn');
+      const input = document.getElementById('loginEmailInput');
+      const logoutBtn = document.getElementById('logoutBtn');
+      if(btn) btn.addEventListener('click', () => {
+        const email = (input?.value || '').trim();
+        if(!email){ showLoginError('Vui lòng nhập email.'); return; }
+        attemptLogin(email);
+      });
+      if(input) input.addEventListener('keydown', e => {
+        if(e.key === 'Enter'){ e.preventDefault(); btn && btn.click(); }
+      });
+      if(logoutBtn) logoutBtn.addEventListener('click', logout);
+    }
+
+    function bindEvents(){
+      bindLoginEvents();
+      $('#sidebarToggle').addEventListener('click', toggleSidebar);
+      window.addEventListener('resize', () => {
+        if(window.innerWidth <= 720) $('.app').classList.add('sidebar-collapsed');
+        updateSidebarToggle();
+      });
+      $('#mainNav').addEventListener('click', e => {
+        const btn = e.target.closest('button[data-view]');
+        if(btn) setView(btn.dataset.view);
+      });
+      $('#fullscreenBtn').addEventListener('click', toggleFullscreen);
+      $('#backupQuickBtn').addEventListener('click', createBackup);
+      $('#backupBtn').addEventListener('click', createBackup);
+      $('#scheduleBackupBtn').addEventListener('click', () => {
+        log('SCHEDULE_BACKUP','Settings','Backup định kỳ 30 phút đã được bật trong prototype');
+        toast('Backup định kỳ', 'Đã mô phỏng bật lịch backup mỗi 30 phút.');
+      });
+      $('#searchInput').addEventListener('input', renderSearchResults);
+      $('#clearSearchBtn').addEventListener('click', () => { $('#searchInput').value=''; renderSearchResults(); });
+      $('#toggleCameraBtn').addEventListener('click', toggleCamera);
+      $('#openAddBtn').addEventListener('click', () => openPersonModal());
+      $('#openAddBtn2').addEventListener('click', () => openPersonModal());
+      $('#personForm').addEventListener('submit', savePerson);
+      $('#guestForm').addEventListener('submit', saveGuestForm);
+      $('#statusFilter').addEventListener('click', e => {
+        const btn = e.target.closest('button[data-status]');
+        if(!btn) return;
+        state.listStatus = btn.dataset.status;
+        $$('#statusFilter button').forEach(b => b.classList.toggle('active', b === btn));
+        renderParticipantTable();
+      });
+      $('#groupFilter').addEventListener('change', renderParticipantTable);
+      $('#listSearch').addEventListener('input', renderParticipantTable);
+      $('#deleteSelectedBtn')?.addEventListener('click', deleteSelectedParticipants);
+      $('#selectAllParticipants')?.addEventListener('change', e => toggleSelectAllParticipants(e.target.checked));
+      $('#generateMissingBtn').addEventListener('click', generateMissingQr);
+      $('#generateAllBtn').addEventListener('click', generateAllQr);
+      $('#exportCheckedBtn').addEventListener('click', () => exportCsv('checked-in', state.participants.filter(p => p.status === 'Checked-in')));
+      $('#exportAllBtn').addEventListener('click', () => exportCsv('all-participants', state.participants));
+      $('#downloadTemplateBtn').addEventListener('click', downloadImportTemplate);
+      $('#importFileInput').addEventListener('change', handleImportFile);
+      $('#skipDuplicatesBtn').addEventListener('click', () => finalizeImport(false));
+      $('#importApprovedBtn').addEventListener('click', () => finalizeImport(true));
+      $('#onsiteDateInput').value = state.settings.onsiteDate;
+      $('#onsiteDateInput').addEventListener('change', e => {
+        state.settings.onsiteDate = e.target.value;
+        log('UPDATE_SETTING','onsiteDate',`On-site registration date changed to ${state.settings.onsiteDate}`);
+        renderStats();
+      });
+      $('[name="detailedGroup"]', $('#personForm')).addEventListener('change', syncMainGroupField);
+      $('#scanConfirmBtn').addEventListener('click', () => {
+        const id = $('#scanConfirmBtn').dataset.id;
+        closeModals();
+        checkIn(id, 'QR');
+      });
+      document.addEventListener('click', e => {
+        if(e.target.closest('[data-close-modal]')) closeModals();
+        const action = e.target.closest('[data-action]');
+        if(action) handleAction(action.dataset.action, action.dataset.id);
+      });
+      // User management
+      const addUserBtn = document.getElementById('addUserBtn');
+      if(addUserBtn) addUserBtn.addEventListener('click', () => openUserModal(null));
+      const userForm = document.getElementById('userForm');
+      if(userForm) userForm.addEventListener('submit', saveUserForm);
+    }
+
+    function fillGroupSelects(){
+      const detailOptions = GROUPS.map(g => `<option value="${escapeHtml(g.detail)}">${escapeHtml(g.detail)}</option>`).join('');
+      $('#guestGroupSelect').innerHTML = detailOptions;
+      $('[name="detailedGroup"]', $('#personForm')).innerHTML = detailOptions;
+      $('#groupFilter').innerHTML = '<option value="all">Tất cả nhóm</option>' + detailOptions;
+    }
+
+    function applyRole(role){
+      state.role = role;
+      updateUserBadge();
+      $$('[data-admin-only]').forEach(el => el.hidden = role !== 'admin');
+      $$('#mainNav button[data-view]').forEach(btn => {
+        const allowed = btn.dataset.roles.split(',').includes(role);
+        btn.hidden = !allowed;
+      });
+      // Hide the "Admin" nav title when not admin
+      const adminNavTitle = $$('#mainNav .nav-title').find(el => el.textContent.trim() === 'Admin');
+      if(adminNavTitle) adminNavTitle.hidden = role !== 'admin';
+      if(role === 'guest') setView('guest');
+      if(role !== 'admin' && ['qr','logs','settings','dashboard'].includes(state.activeView)) setView('checkin');
+      renderAll();
+    }
+
+    function setView(view){
+      state.activeView = view;
+      $$('.view').forEach(v => v.classList.toggle('active', v.id === `view-${view}`));
+      $$('#mainNav button[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+      const meta = viewMeta[view] || [roleProfiles[state.role].title, roleProfiles[state.role].subtitle];
+      $('#viewTitle').textContent = meta[0];
+      $('#viewSubtitle').textContent = meta[1];
+      if(view === 'users') loadUsersFromGAS();
+      renderAll();
+      lucide.createIcons();
+    }
+
+    function renderAll(){
+      renderSearchResults();
+      renderSelectedPerson();
+      renderStats();
+      renderParticipantTable();
+      renderNoteTables();
+      renderDashboard();
+      renderQrTable();
+      renderLogs();
+      $('#navOpenCount').textContent = state.participants.filter(p => p.status !== 'Checked-in').length;
+      lucide.createIcons();
+    }
+
+    function renderSearchResults(){
+      const q = normalize($('#searchInput').value);
+      const results = q ? state.participants.filter(p => searchableText(p).includes(q)) : state.participants.slice(0,5);
+      $('#searchResults').innerHTML = results.length ? results.map(p => resultRow(p)).join('') : emptyState('Không tìm thấy kết quả phù hợp.');
+    }
+
+    function resultRow(p){
+      return `<button class="result-row ${state.selectedId === p.id ? 'active' : ''}" data-action="select" data-id="${p.id}">
+        <div>
+          <div class="result-name">${escapeHtml(p.name)}</div>
+          <div class="result-sub">${escapeHtml(p.email)} · ${escapeHtml(p.affiliation)}</div>
+          <div class="chips" style="margin-top:7px">${groupChip(p)}${statusChip(p)}</div>
+        </div>
+        <i data-lucide="chevron-right"></i>
+      </button>`;
+    }
+
+    function selectPerson(id){
+      state.selectedId = id;
+      renderSearchResults();
+      renderSelectedPerson();
+    }
+
+    function renderSelectedPerson(){
+      const box = $('#selectedPerson');
+      const p = getSelected();
+      if(!p){
+        box.innerHTML = `<div class="person-empty"><i data-lucide="user-search"></i><div>Chọn một người từ QR hoặc kết quả tìm kiếm.</div></div>`;
+        return;
+      }
+      const checked = p.status === 'Checked-in';
+      box.innerHTML = `
+        <div class="person-top">
+          <div class="avatar">${initials(p.name)}</div>
+          <div style="min-width:0">
+            <h3 class="person-name">${escapeHtml(p.name)}</h3>
+            <div class="chips">${groupChip(p, true)}${statusChip(p)}</div>
+            <div class="meta" style="margin-top:10px">
+              <span><i data-lucide="mail"></i>${escapeHtml(p.email)}</span>
+              <span><i data-lucide="phone"></i>${escapeHtml(p.phone || 'No phone')}</span>
+              <span><i data-lucide="building-2"></i>${escapeHtml(p.affiliation)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="note-box"><b>Ghi chú BTC trước check-in:</b> ${escapeHtml(p.preNote || 'Không có ghi chú.')}</div>
+        <div class="info-grid">
+          <div class="info-cell"><b>Affiliation / Nơi công tác</b><span>${escapeHtml(p.affiliation || '-')}</span></div>
+          <div class="info-cell"><b>media_consent</b><span>${escapeHtml(p.mediaConsent || '-')}</span></div>
+          <div class="info-cell"><b>Check-in time</b><span>${escapeHtml(p.checkinTime || 'Chưa check-in')}</span></div>
+          <div class="info-cell"><b>Check-in by</b><span>${escapeHtml(p.checkinBy || '-')}</span></div>
+        </div>
+        <div class="field">
+          <label>Ghi chú sau check-in</label>
+          <textarea class="textarea" id="postNoteInput" placeholder="Nhập ghi chú sau check-in...">${escapeHtml(p.postNote || '')}</textarea>
+        </div>
+        ${checked ? `<div class="note-box" style="border-left-color:var(--bad);background:var(--bad-soft);color:var(--bad)"><b>Cảnh báo:</b> Người này đã check-in lúc ${escapeHtml(p.checkinTime)} bởi ${escapeHtml(p.checkinBy)}.</div>` : ''}
+        <div class="person-actions">
+          <button class="btn btn-primary" data-action="checkin" data-id="${p.id}" ${checked ? 'disabled' : ''}><i data-lucide="badge-check"></i>Xác nhận check-in</button>
+          <button class="btn btn-gold" data-action="save-note" data-id="${p.id}"><i data-lucide="message-square-plus"></i>Lưu ghi chú</button>
+          <button class="btn btn-ghost" data-action="edit" data-id="${p.id}"><i data-lucide="pencil"></i>Chi tiết / chỉnh sửa</button>
+          ${state.role === 'admin' && checked ? `<button class="btn btn-danger" data-action="undo" data-id="${p.id}"><i data-lucide="rotate-ccw"></i>Undo check-in</button>` : ''}
+        </div>`;
+    }
+
+    function renderStats(){
+    }
+
+    function renderParticipantTable(){
+      const group = $('#groupFilter').value || 'all';
+      const query = normalize($('#listSearch').value || '');
+      let rows = state.participants.filter(p => state.listStatus === 'all' || p.status === state.listStatus);
+      if(group !== 'all') rows = rows.filter(p => p.detailedGroup === group);
+      if(query) rows = rows.filter(p => searchableText(p).includes(query));
+      const adminSelectCell = p => state.role === 'admin'
+        ? `<td><input type="checkbox" class="participant-select" data-id="${p.id}" ${state.selectedDeleteIds.has(p.id) ? 'checked' : ''} aria-label="Chọn ${escapeHtml(p.name)}"></td>`
+        : '';
+      $('#participantsTable').innerHTML = rows.map(p => `<tr>
+        ${adminSelectCell(p)}
+        <td><b>${escapeHtml(p.name)}</b><br><span style="color:var(--ink-500)">${escapeHtml(p.email)}</span></td>
+        <td>${groupChip(p)}</td>
+        <td>${escapeHtml(p.affiliation)}</td>
+        <td>${escapeHtml(p.mediaConsent || '-')}</td>
+        <td>${statusChip(p)}<br><span style="color:var(--ink-500);font-size:12px">${escapeHtml(p.checkinTime || '')}</span></td>
+        <td>
+          <button class="btn btn-soft btn-sm" data-action="select-view" data-id="${p.id}"><i data-lucide="eye"></i>Xem</button>
+          <button class="btn btn-ghost btn-sm" data-action="edit" data-id="${p.id}"><i data-lucide="pencil"></i>Sửa</button>
+          ${state.role === 'admin' ? `<button class="btn btn-danger btn-sm" data-action="delete-person" data-id="${p.id}"><i data-lucide="trash-2"></i>Xóa</button>` : ''}
+        </td>
+      </tr>`).join('') || `<tr><td colspan="${state.role === 'admin' ? 7 : 6}">Không có dữ liệu phù hợp.</td></tr>`;
+      $$('.participant-select').forEach(input => {
+        input.addEventListener('change', e => {
+          if(e.target.checked) state.selectedDeleteIds.add(e.target.dataset.id);
+          else state.selectedDeleteIds.delete(e.target.dataset.id);
+          updateDeleteSelectionUi(rows);
+        });
+      });
+      updateDeleteSelectionUi(rows);
+    }
+
+    function renderNoteTables(){
+      const preRows = state.participants.filter(p => (p.preNote || '').trim());
+      $('#preNotesTable').innerHTML = preRows.map(p => `<tr>
+        <td>${escapeHtml(p.id)}</td>
+        <td><b>${escapeHtml(p.name)}</b><br><span style="color:var(--ink-500);font-size:14px">${escapeHtml(p.email)} · ${escapeHtml(p.phone || '')}</span></td>
+        <td>${groupChip(p)}</td>
+        <td>${escapeHtml(p.affiliation)}</td>
+        <td style="white-space:normal;min-width:280px;font-size:17px;font-weight:700;color:#5c3b10">${escapeHtml(p.preNote)}</td>
+        <td><button class="btn btn-soft btn-sm" data-action="select-view" data-id="${p.id}"><i data-lucide="scan-line"></i>Check-in</button></td>
+      </tr>`).join('') || `<tr><td colspan="6">Không có ghi chú trước hội nghị.</td></tr>`;
+
+      const postRows = state.participants.filter(p => (p.postNote || '').trim());
+      $('#postNotesTable').innerHTML = postRows.map(p => `<tr>
+        <td>${escapeHtml(p.id)}</td>
+        <td><b>${escapeHtml(p.name)}</b><br><span style="color:var(--ink-500);font-size:14px">${escapeHtml(p.email)} · ${escapeHtml(p.phone || '')}</span></td>
+        <td>${groupChip(p)}</td>
+        <td>${statusChip(p)}<br><span style="color:var(--ink-500);font-size:12px">${escapeHtml(p.checkinTime || '')}</span></td>
+        <td style="white-space:normal;min-width:280px;font-size:17px;font-weight:700;color:#5c3b10">${escapeHtml(p.postNote)}</td>
+        <td><button class="btn btn-soft btn-sm" data-action="select-view" data-id="${p.id}"><i data-lucide="eye"></i>Xem</button></td>
+      </tr>`).join('') || `<tr><td colspan="6">Không có ghi chú sau check-in.</td></tr>`;
+    }
+
+    function renderDashboard(){
+      const total = state.participants.length;
+      const checked = state.participants.filter(p => p.status === 'Checked-in').length;
+      const onsite = state.participants.filter(p => p.source === 'On-site Registration').length;
+      const missingQr = state.participants.filter(p => p.qrStatus !== 'Generated' && p.qrStatus !== 'Regenerated').length;
+      const rate = total ? Math.round(checked / total * 100) : 0;
+      $('#dashboardStats').innerHTML = [
+        statCard('Tổng số', total, 'Participants in database', 100),
+        statCard('Đã check-in', checked, `${rate}% completed`, rate),
+        statCard('Chưa check-in', total - checked, 'Waiting at desk', total ? Math.round((total-checked)/total*100) : 0),
+        statCard('On-site', onsite, `${missingQr} QR missing/error`, total ? Math.round(onsite/total*100) : 0)
+      ].join('');
+      $('#groupBars').innerHTML = GROUPS.map(g => {
+        const members = state.participants.filter(p => p.detailedGroup === g.detail);
+        if(!members.length) return '';
+        const done = members.filter(p => p.status === 'Checked-in').length;
+        const pct = Math.round(done / members.length * 100);
+        return `<div>
+          <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:6px">
+            ${groupChip({detailedGroup:g.detail})}
+            <span style="font-family:'Sora';font-weight:800">${done}/${members.length}</span>
+          </div>
+          <div class="progress"><span style="width:${pct}%;background:${g.color}"></span></div>
+        </div>`;
+      }).join('');
+      $('#recentLogs').innerHTML = state.logs.slice(-6).reverse().map(l => `<div class="result-row" style="grid-template-columns:1fr">
+        <div class="result-name">${escapeHtml(l.action)} · ${escapeHtml(l.target)}</div>
+        <div class="result-sub">${escapeHtml(l.time)} · ${escapeHtml(l.user)}</div>
+        <div style="font-size:13px;color:var(--ink-700)">${escapeHtml(l.detail)}</div>
+      </div>`).join('');
+    }
+
+    function renderQrTable(){
+      $('#qrTable').innerHTML = state.participants.map(p => `<tr>
+        <td>${escapeHtml(p.id)}</td>
+        <td><b>${escapeHtml(p.name)}</b></td>
+        <td>${escapeHtml(p.email)}</td>
+        <td>${groupChip(p)}</td>
+        <td>${qrChip(p)}</td>
+        <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis">${escapeHtml(p.qrPayload || '-')}</td>
+        <td>
+          <button class="btn btn-soft btn-sm" data-action="show-qr" data-id="${p.id}"><i data-lucide="eye"></i>Xem</button>
+          <button class="btn btn-ghost btn-sm" data-action="generate-qr" data-id="${p.id}"><i data-lucide="qr-code"></i>Tạo</button>
+          <button class="btn btn-gold btn-sm" data-action="regenerate-qr" data-id="${p.id}"><i data-lucide="refresh-cw"></i>Cấp lại</button>
+          <button class="btn btn-danger btn-sm" data-action="delete-qr" data-id="${p.id}"><i data-lucide="trash-2"></i>Xóa</button>
+        </td>
+      </tr>`).join('');
+    }
+
+    function renderLogs(){
+      $('#logsTable').innerHTML = state.logs.slice().reverse().map(l => `<tr>
+        <td>${escapeHtml(l.time)}</td><td>${escapeHtml(l.user)}</td><td><span class="chip" style="background:var(--line-light);color:var(--p)">${escapeHtml(l.action)}</span></td><td>${escapeHtml(l.target)}</td><td>${escapeHtml(l.detail)}</td>
+      </tr>`).join('');
+    }
+
+    function handleAction(action, id){
+      if(action === 'select') selectPerson(id);
+      if(action === 'select-view'){ selectPerson(id); setView('checkin'); }
+      if(action === 'checkin') checkIn(id);
+      if(action === 'save-note') savePostNote(id);
+      if(action === 'edit') openPersonModal(id);
+      if(action === 'undo') undoCheckin(id);
+      if(action === 'show-qr') showQr(id);
+      if(action === 'generate-qr') generateQr(id, false);
+      if(action === 'regenerate-qr') generateQr(id, true);
+      if(action === 'delete-qr') deleteQr(id);
+      if(action === 'delete-person') deleteParticipants([id]);
+      if(action === 'open-pre-notes') setView('pre-notes');
+    }
+
+    function updateDeleteSelectionUi(visibleRows = []){
+      const btn = $('#deleteSelectedBtn');
+      if(btn){
+        const count = state.selectedDeleteIds.size;
+        btn.disabled = !count || state.role !== 'admin';
+        btn.innerHTML = `<i data-lucide="trash-2"></i>${count ? `Xóa ${count} người` : 'Xóa đã chọn'}`;
+      }
+      const all = $('#selectAllParticipants');
+      if(all){
+        const ids = visibleRows.map(p => p.id);
+        const selectedVisible = ids.filter(id => state.selectedDeleteIds.has(id)).length;
+        all.checked = !!ids.length && selectedVisible === ids.length;
+        all.indeterminate = selectedVisible > 0 && selectedVisible < ids.length;
+      }
+      lucide.createIcons();
+    }
+
+    function toggleSelectAllParticipants(checked){
+      const group = $('#groupFilter').value || 'all';
+      const query = normalize($('#listSearch').value || '');
+      let rows = state.participants.filter(p => state.listStatus === 'all' || p.status === state.listStatus);
+      if(group !== 'all') rows = rows.filter(p => p.detailedGroup === group);
+      if(query) rows = rows.filter(p => searchableText(p).includes(query));
+      rows.forEach(p => checked ? state.selectedDeleteIds.add(p.id) : state.selectedDeleteIds.delete(p.id));
+      renderParticipantTable();
+    }
+
+    function deleteSelectedParticipants(){
+      deleteParticipants([...state.selectedDeleteIds]);
+    }
+
+    function deleteParticipants(ids){
+      if(state.role !== 'admin'){ toast('Không có quyền', 'Chỉ admin được xoá người tham dự.'); return; }
+      const cleanIds = [...new Set((ids || []).filter(Boolean))];
+      if(!cleanIds.length) return;
+      const names = cleanIds.map(id => byId(id)?.name || id).join(', ');
+      if(!confirm(`Xác nhận xoá ${cleanIds.length} người khỏi danh sách active?\n${names}\n\nThao tác này sẽ được ghi audit log.`)) return;
+      if(window.google && google.script && state.currentUser){
+        google.script.run
+          .withSuccessHandler(res => {
+            if(!res || !res.ok){ toast('Không xoá được', res?.message || 'Backend từ chối thao tác.'); return; }
+            removeParticipantsLocally(cleanIds);
+            toast('Đã xoá', `${cleanIds.length} người đã được xoá khỏi danh sách active.`);
+          })
+          .withFailureHandler(err => toast('Không xoá được', err?.message || 'Lỗi kết nối GAS.'))
+          .deleteParticipants(cleanIds, actorEmail());
+        return;
+      }
+      removeParticipantsLocally(cleanIds);
+      toast('Đã xoá', `${cleanIds.length} người đã được xoá khỏi danh sách.`);
+    }
+
+    function removeParticipantsLocally(ids){
+      const idSet = new Set(ids);
+      state.participants = state.participants.filter(p => !idSet.has(p.id));
+      ids.forEach(id => state.selectedDeleteIds.delete(id));
+      if(idSet.has(state.selectedId)) state.selectedId = state.participants[0]?.id || null;
+      log('DELETE_PARTICIPANTS', 'Participants', `Deleted ${ids.length} participants`);
+      renderAll();
+    }
+
+    function checkIn(id, method = 'Manual search'){
+      const p = byId(id);
+      if(!p || p.status === 'Checked-in') return;
+      const note = $('#postNoteInput')?.value || '';
+      if(window.google && google.script && state.currentUser){
+        google.script.run
+          .withSuccessHandler(res => {
+            if(!res || !res.ok){
+              toast('Không thể check-in', res?.message || 'Backend từ chối thao tác.');
+              renderAll();
+              return;
+            }
+            mergeServerParticipant(res.data, p);
+            log('CHECK_IN', p.id, `${method} check-in ${p.name}`);
+            toast('Check-in thành công', `${p.name} đã được đánh dấu đã check-in.`);
+            renderAll();
+          })
+          .withFailureHandler(err => {
+            toast('Không thể check-in', err?.message || 'Lỗi kết nối GAS.');
+            renderAll();
+          })
+          .checkInParticipant(p.id, method, note, actorEmail());
+        return;
+      }
+      applyLocalCheckin(p, method, note);
+    }
+
+    function applyLocalCheckin(p, method, note){
+      p.status = 'Checked-in';
+      p.checkinTime = now();
+      p.checkinBy = actorEmail() || roleProfiles[state.role].email;
+      p.method = method;
+      p.counter += 1;
+      if(note) p.postNote = note;
+      log('CHECK_IN', p.id, `${p.method} check-in ${p.name}`);
+      toast('Check-in thành công', `${p.name} đã được đánh dấu đã check-in.`);
+      renderAll();
+    }
+
+    function undoCheckin(id){
+      const p = byId(id);
+      if(!p) return;
+      if(!confirm(`Xác nhận undo check-in cho ${p.name}? Thao tác này sẽ được ghi log.`)) return;
+      const oldTime = p.checkinTime;
+      p.status = 'Not checked-in';
+      p.checkinTime = '';
+      p.checkinBy = '';
+      p.method = '';
+      log('UNDO_CHECK_IN', p.id, `Undo check-in ${p.name}, previous time ${oldTime}`);
+      if(window.google && google.script && state.currentUser){
+        google.script.run
+          .withSuccessHandler(res => {
+            if(res && res.ok && res.data) mergeServerParticipant(res.data, p);
+            else toast('Không thể undo', res?.message || 'Backend từ chối thao tác.');
+            renderAll();
+          })
+          .withFailureHandler(err => toast('Không thể undo', err?.message || 'Lỗi kết nối GAS.'))
+          .undoCheckIn(id, actorEmail());
+      }
+      toast('Đã undo check-in', p.name);
+      renderAll();
+    }
+
+    function savePostNote(id){
+      const p = byId(id);
+      if(!p) return;
+      const old = p.postNote || '';
+      p.postNote = $('#postNoteInput').value;
+      log('UPDATE_NOTE', p.id, `Post-check-in note changed from "${old}" to "${p.postNote}"`);
+      toast('Đã lưu ghi chú', p.name);
+      renderAll();
+    }
+
+    function openPersonModal(id){
+      const form = $('#personForm');
+      form.reset();
+      const p = id ? byId(id) : null;
+      $('#personModalTitle').textContent = p ? 'Sửa thông tin người tham dự' : 'Thêm người tham dự';
+      form.elements.id.value = p?.id || '';
+      form.elements.name.value = p?.name || '';
+      form.elements.email.value = p?.email || '';
+      form.elements.phone.value = p?.phone || '';
+      form.elements.affiliation.value = p?.affiliation || '';
+      form.elements.title.value = p?.title || '';
+      form.elements.detailedGroup.value = GROUPS.some(g => g.detail === p?.detailedGroup) ? p.detailedGroup : 'Participant';
+      syncMainGroupField();
+      form.elements.source.value = p?.source || defaultSourceForToday();
+      fillImportDetailFields(form, p || {});
+      form.elements.preNote.value = p?.preNote || '';
+      form.elements.postNote.value = p?.postNote || '';
+      $('#personModal').classList.add('active');
+    }
+
+    function savePerson(e){
+      e.preventDefault();
+      const f = e.currentTarget.elements;
+      const existing = f.id.value ? byId(f.id.value) : null;
+      const detail = f.detailedGroup.value;
+      const group = GROUPS.find(g => g.detail === detail);
+      if(existing){
+        const before = JSON.stringify(existing);
+        Object.assign(existing, {
+          name:f.name.value.trim(), email:f.email.value.trim(), phone:f.phone.value.trim(), affiliation:f.affiliation.value.trim(),
+          title:f.title.value.trim(), mainGroup:group?.main || f.mainGroup.value, detailedGroup:detail, source:f.source.value,
+          ...collectImportDetailFields(f),
+          preNote:f.preNote.value.trim(), postNote:f.postNote.value.trim()
+        });
+        log('UPDATE_PARTICIPANT', existing.id, `Updated participant. Previous snapshot: ${before}`);
+        persistParticipant(existing, 'Đã cập nhật', existing.name);
+      }else{
+        const p = {
+          id: nextId(), name:f.name.value.trim(), email:f.email.value.trim(), phone:f.phone.value.trim(), affiliation:f.affiliation.value.trim(),
+          title:f.title.value.trim(), mainGroup:group?.main || 'Participant', detailedGroup:detail,
+          source:f.source.value || defaultSourceForToday(), status:'Not checked-in', checkinTime:'', checkinBy:'', method:'', counter:0,
+          qrStatus:'Not generated', qrPayload:'', ...collectImportDetailFields(f), preNote:f.preNote.value.trim(), postNote:f.postNote.value.trim()
+        };
+        state.participants.push(p);
+        state.selectedId = p.id;
+        log('CREATE_PARTICIPANT', p.id, `Created ${p.name} from ${p.source}`);
+        persistParticipant(p, 'Đã thêm người tham dự', p.name);
+      }
+      closeModals();
+      renderAll();
+    }
+
+    function saveGuestForm(e){
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.currentTarget).entries());
+      const group = GROUPS.find(g => g.detail === data.group);
+      const p = {
+        id: nextId(), name:data.name.trim(), email:data.email.trim(), phone:data.phone.trim(), affiliation:data.affiliation.trim(),
+        title:data.title.trim(), mainGroup:group?.main || 'Participant', detailedGroup:data.group, source:defaultSourceForToday(),
+        status:'Not checked-in', checkinTime:'', checkinBy:'', method:'', counter:0, qrStatus:'Not generated', qrPayload:'',
+        preNote:'Thông tin tự nhập từ view khách, cần staff rà soát.', postNote:data.note.trim()
+      };
+      state.participants.push(p);
+      log('GUEST_SUBMIT', p.id, `Guest submitted ${p.name}`);
+      persistParticipant(p, 'Đã nhận thông tin', 'Thông tin đã được thêm vào danh sách chờ rà soát.');
+      e.currentTarget.reset();
+      renderAll();
+    }
+
+    function simulateQrScan(){
+      const candidates = state.participants.filter(p => p.qrPayload);
+      const p = candidates[Math.floor(Math.random() * candidates.length)] || state.participants[0];
+      selectPerson(p.id);
+      showScanResult(p.id);
+      if(p.status === 'Checked-in'){
+        toast('Đã check-in trước đó', `${p.name} đã check-in lúc ${p.checkinTime}.`);
+      }else{
+        toast('Đã đọc QR', `${p.name} · ${p.email}`);
+      }
+    }
+
+    function toggleCamera(){
+      if(state.cameraStream) stopCamera();
+      else startCamera();
+    }
+
+    async function startCamera(){
+      try{
+        let stream;
+        try{
+          stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+        }catch(e){
+          stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+        }
+        state.cameraStream = stream;
+        const video = $('#cameraVideo');
+        video.srcObject = stream;
+        await video.play();
+        video.hidden = false;
+        $('#cameraPlaceholder').hidden = true;
+        $('#toggleCameraBtn').innerHTML = '<i data-lucide="video-off"></i>Tắt camera';
+        toast('Camera đã bật', 'Sẵn sàng quét QR. Đặt camera sao cho QR nằm trong khung.');
+        startQrLoop(video);
+        lucide.createIcons();
+      }catch(err){
+        toast('Không bật được camera', 'Kiểm tra quyền camera trong cài đặt trình duyệt. Dùng tìm kiếm thủ công nếu cần.');
+      }
+    }
+
+    function stopCamera(){
+      if(state.cameraStream) state.cameraStream.getTracks().forEach(t => t.stop());
+      state.cameraStream = null;
+      if(state.qrScanTimer) cancelAnimationFrame(state.qrScanTimer);
+      state.qrScanTimer = null;
+      state.lastQrPayload = '';
+      $('#cameraVideo').hidden = true;
+      $('#cameraPlaceholder').hidden = false;
+      $('#toggleCameraBtn').innerHTML = '<i data-lucide="video"></i>Bật camera';
+      lucide.createIcons();
+    }
+
+    async function startQrLoop(video){
+      if(!('BarcodeDetector' in window)){
+        toast('Thiết bị chưa hỗ trợ đọc QR', 'Camera vẫn bật. Hãy dùng ô tìm kiếm nếu trình duyệt không hỗ trợ BarcodeDetector.');
+        return;
+      }
+      try{
+        state.qrDetector = state.qrDetector || new BarcodeDetector({ formats:['qr_code'] });
+      }catch(err){
+        toast('Không khởi tạo được QR scanner', 'Hãy dùng Chrome/Edge mới hoặc tìm thủ công.');
+        return;
+      }
+      const tick = async () => {
+        if(!state.cameraStream || !state.qrDetector) return;
+        try{
+          if(video.readyState >= 2){
+            const codes = await state.qrDetector.detect(video);
+            if(codes && codes.length) handleQrPayload(codes[0].rawValue || '');
+          }
+        }catch(err){}
+        state.qrScanTimer = requestAnimationFrame(tick);
+      };
+      state.qrScanTimer = requestAnimationFrame(tick);
+    }
+
+    function handleQrPayload(payload){
+      const clean = String(payload || '').trim();
+      if(!clean || clean === state.lastQrPayload) return;
+      state.lastQrPayload = clean;
+      const p = findByQrPayload(clean);
+      if(!p){
+        toast('Không tìm thấy QR', 'Payload không khớp người tham dự trong danh sách.');
+        return;
+      }
+      selectPerson(p.id);
+      showScanResult(p.id);
+      toast(p.status === 'Checked-in' ? 'Đã check-in trước đó' : 'Đã đọc QR', `${p.name} · ${p.email}`);
+    }
+
+    function findByQrPayload(payload){
+      const raw = String(payload || '').trim();
+      const parts = raw.split('|').map(v => v.trim());
+      const email = parts.length > 1 ? parts[parts.length - 1] : raw;
+      return state.participants.find(p => normalize(p.email) === normalize(email))
+        || state.participants.find(p => normalize(p.qrPayload) === normalize(raw))
+        || state.participants.find(p => normalize(p.name) === normalize(parts[0] || raw));
+    }
+
+    function showScanResult(id){
+      const p = byId(id);
+      if(!p) return;
+      $('#scanConfirmBtn').dataset.id = p.id;
+      $('#scanConfirmBtn').disabled = p.status === 'Checked-in';
+      $('#scanModalBody').innerHTML = `
+        <div class="scan-summary">
+          <div class="avatar">${initials(p.name)}</div>
+          <div>
+            <h3 class="person-name" style="margin-bottom:12px">${escapeHtml(p.name)}</h3>
+            <div class="chips">${groupChip(p, true)}${statusChip(p)}</div>
+            <div class="meta" style="margin-top:14px">
+              <span><i data-lucide="mail"></i>${escapeHtml(p.email)}</span>
+              <span><i data-lucide="phone"></i>${escapeHtml(p.phone || 'No phone')}</span>
+              <span><i data-lucide="building-2"></i>${escapeHtml(p.affiliation)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="note-box" style="margin-top:16px"><b>Ghi chú BTC trước check-in:</b> ${escapeHtml(p.preNote || 'Không có ghi chú.')}</div>
+        ${p.status === 'Checked-in' ? `<div class="note-box" style="margin-top:12px;border-left-color:var(--bad);background:var(--bad-soft);color:var(--bad)"><b>Cảnh báo:</b> Người này đã check-in lúc ${escapeHtml(p.checkinTime)} bởi ${escapeHtml(p.checkinBy)}.</div>` : ''}`;
+      $('#scanModal').classList.add('active');
+      lucide.createIcons();
+    }
+
+    function generateQr(id, regenerate){
+      const p = byId(id);
+      if(!p) return;
+      if(regenerate && !confirm(`Bạn muốn xóa QR hiện tại và cấp lại QR cho ${p.name} (${p.email})?\nThao tác này sẽ được ghi log.`)) return;
+      p.qrPayload = `${p.name}|${p.email}`;
+      p.qrStatus = regenerate ? 'Regenerated' : 'Generated';
+      log(regenerate ? 'REGENERATE_QR' : 'GENERATE_QR', p.id, `${p.qrStatus} for ${p.name}`);
+      if(window.google && google.script && state.currentUser){
+        google.script.run
+          .withSuccessHandler(res => {
+            if(res && res.ok && res.data) mergeServerParticipant(res.data, p);
+            else toast('Không lưu được QR', res?.message || 'Backend từ chối thao tác.');
+            renderAll();
+          })
+          .withFailureHandler(err => toast('Không lưu được QR', err?.message || 'Lỗi kết nối GAS.'))
+          .generateQrPayload(id, actorEmail());
+      }
+      toast(regenerate ? 'Đã cấp lại QR' : 'Đã tạo QR', p.name);
+      renderAll();
+    }
+
+    function generateMissingQr(){
+      const missing = state.participants.filter(p => p.qrStatus !== 'Generated' && p.qrStatus !== 'Regenerated');
+      missing.forEach(p => { p.qrPayload = `${p.name}|${p.email}`; p.qrStatus = 'Generated'; });
+      log('GENERATE_MISSING_QR','QR',`Generated ${missing.length} missing QR codes`);
+      if(window.google && google.script && state.currentUser){
+        google.script.run
+          .withSuccessHandler(res => toast('Đã lưu QR còn thiếu', `${res?.data?.generated ?? missing.length} QR code được cập nhật vào Sheet.`))
+          .withFailureHandler(err => toast('Không lưu được QR', err?.message || 'Lỗi kết nối GAS.'))
+          .generateMissingQrPayloads(actorEmail());
+      }
+      toast('Đã tạo QR còn thiếu', `${missing.length} QR code được tạo.`);
+      renderAll();
+    }
+
+    function generateAllQr(){
+      if(!confirm('Tạo hoặc ghi đè QR cho toàn bộ danh sách? Thao tác này sẽ được ghi log.')) return;
+      state.participants.forEach(p => { p.qrPayload = `${p.name}|${p.email}`; p.qrStatus = p.qrStatus === 'Generated' ? 'Generated' : 'Regenerated'; });
+      log('GENERATE_ALL_QR','QR',`Generated/regenerated QR for ${state.participants.length} participants`);
+      if(window.google && google.script && state.currentUser){
+        google.script.run
+          .withSuccessHandler(res => toast('Đã lưu QR hàng loạt', `${res?.data?.generated ?? state.participants.length} QR code được cập nhật vào Sheet.`))
+          .withFailureHandler(err => toast('Không lưu được QR', err?.message || 'Lỗi kết nối GAS.'))
+          .generateAllQrPayloads(actorEmail());
+      }
+      toast('Đã tạo QR hàng loạt', `${state.participants.length} người tham dự.`);
+      renderAll();
+    }
+
+    function deleteQr(id){
+      const p = byId(id);
+      if(!p) return;
+      if(!confirm(`Xác nhận xóa QR của ${p.name}?\nEmail: ${p.email}\nQR cũ sẽ bị xóa khỏi hệ thống prototype.`)) return;
+      p.qrPayload = '';
+      p.qrStatus = 'Deleted';
+      log('DELETE_QR', p.id, `Deleted QR for ${p.name}`);
+      toast('Đã xóa QR', p.name);
+      renderAll();
+    }
+
+    function showQr(id){
+      const p = byId(id);
+      if(!p) return;
+      $('#qrModalBody').innerHTML = `
+        <div class="qr-preview">
+          <div id="qrcode" style="width:100%;display:flex;justify-content:center"></div>
+          <div style="text-align:center;width:100%">
+            <h3>${escapeHtml(p.name)}</h3>
+            <div class="qr-preview-email">${escapeHtml(p.email)}</div>
+            <div class="chips" style="justify-content:center;margin:12px 0 0 0">${groupChip(p)}${qrChip(p)}</div>
+          </div>
+          <div class="info-cell" style="width:100%;margin-top:12px"><b>QR Payload</b><span style="font-family:'JetBrains Mono';font-size:12px">${escapeHtml(p.qrPayload || 'Chưa có QR')}</span></div>
+        </div>`;
+      $('#qrModal').classList.add('active');
+      setTimeout(() => {
+        if(p.qrPayload && window.QRCode){
+          const qrContainer = document.getElementById('qrcode');
+          qrContainer.innerHTML = '';
+          new QRCode(qrContainer, {
+            text: p.qrPayload,
+            width: 240,
+            height: 240,
+            colorDark: '#0f0d2e',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        }
+      }, 100);
+      lucide.createIcons();
+    }
+
+    function createBackup(){
+      const id = `BACKUP-${Date.now()}`;
+      log('CREATE_BACKUP', id, `Manual spreadsheet backup snapshot with ${state.participants.length} participants`);
+      if(window.google && google.script && state.currentUser){
+        google.script.run
+          .withSuccessHandler(res => toast(res?.ok ? 'Backup thành công' : 'Không tạo được backup', res?.ok ? 'Đã sao lưu spreadsheet.' : (res?.message || 'Backend từ chối thao tác.')))
+          .withFailureHandler(err => toast('Không tạo được backup', err?.message || 'Lỗi kết nối GAS.'))
+          .createBackup(actorEmail());
+      }
+      toast('Đã tạo backup', id);
+      renderAll();
+    }
+
+    function toggleSidebar(){
+      $('.app').classList.toggle('sidebar-collapsed');
+      updateSidebarToggle();
+    }
+
+    function updateSidebarToggle(){
+      const collapsed = $('.app').classList.contains('sidebar-collapsed');
+      $('#sidebarToggle').innerHTML = collapsed
+        ? '<i data-lucide="panel-left-open"></i><span>Mở menu</span>'
+        : '<i data-lucide="panel-left-close"></i><span>Thu gọn menu</span>';
+      lucide.createIcons();
+    }
+
+    function syncMainGroupField(){
+      const form = $('#personForm');
+      const detail = form.elements.detailedGroup.value;
+      const group = GROUPS.find(g => g.detail === detail);
+      form.elements.mainGroup.value = group?.main || 'Participant';
+    }
+
+    function defaultSourceForToday(){
+      return dateKey(new Date()) === state.settings.onsiteDate ? 'On-site Registration' : 'Pre-registered';
+    }
+
+    function dateKey(date){
+      const pad = n => String(n).padStart(2,'0');
+      return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+    }
+
+    function formatShortDate(value){
+      if(!value) return '-';
+      const [, month, day] = value.split('-');
+      return `${day}/${month}`;
+    }
+
+    function exportCsv(name, rows){
+      const headers = ['Full name','Email','Phone','Affiliation','media_consent','Main group','Detailed group','On-site status','Check-in status','Check-in time','Check-in by','QR status'];
+      const body = rows.map(p => [p.name,p.email,p.phone,p.affiliation,p.mediaConsent || '',p.mainGroup,p.detailedGroup,p.source,p.status,p.checkinTime,p.checkinBy,p.qrStatus]);
+      const csv = [headers, ...body].map(r => r.map(v => `"${String(v || '').replaceAll('"','""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `mekong-tesol-${name}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      log('EXPORT_CSV', name, `Exported ${rows.length} rows`);
+      toast('Đã xuất file', `${rows.length} dòng dữ liệu.`);
+      renderAll();
+    }
+
+    function downloadImportTemplate(){
+      const headers = ['title','title_other_text','full_name','email','phone','affiliation','nationality','country','province','job','job_other_institution','institution','years_expe','first_attend','source','source_oth','media_consent','ecert_cons','post_conference','notes'];
+      const sample = [
+        ['Mr.','','Nguyen Van A','nguyenvana@example.com','+84 900 000 001','Can Tho University','Vietnamese','Vietnam','Can Tho','Lecturer','','Can Tho University','6','Yes','Website','','Yes','Yes','Yes',''],
+        ['Dr.','','Tran Thi B','tranthib@example.com','+84 900 000 002','Partner Organization','Vietnamese','Vietnam','HCMC','Delegate','','Partner Organization','10','No','Email','','No','Yes','No','Seat near front row']
+      ];
+      const csv = [headers, ...sample].map(r => r.map(v => `"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');
+      downloadBlob(csv, 'mekong-tesol-import-template.csv', 'text/csv;charset=utf-8');
+      log('DOWNLOAD_TEMPLATE', 'Import', 'Downloaded import template');
+      toast('Đã tải template', 'Mẫu CSV có các cột cần import.');
+      renderAll();
+    }
+
+    function fillImportDetailFields(form, p){
+      IMPORT_DETAIL_FIELDS.forEach(field => {
+        if(form.elements[field]) form.elements[field].value = p[field] || '';
+      });
+    }
+
+    function collectImportDetailFields(elements){
+      return Object.fromEntries(IMPORT_DETAIL_FIELDS.map(field => [field, elements[field]?.value?.trim() || '']));
+    }
+
+    function actorEmail(){
+      return state.currentUser?.email || '';
+    }
+
+    function toServerParticipant(p){
+      return {
+        actorEmail: actorEmail(),
+        candidate_id: p.id || '',
+        title: p.title || '',
+        titleOtherText: p.titleOtherText || '',
+        name: p.name || '',
+        full_name: p.name || '',
+        email: p.email || '',
+        phone: p.phone || '',
+        affiliation: p.affiliation || '',
+        nationality: p.nationality || '',
+        country: p.country || '',
+        province: p.province || '',
+        job: p.job || '',
+        jobOtherInstitution: p.jobOtherInstitution || '',
+        institution: p.institution || '',
+        yearsExperience: p.yearsExperience || '',
+        firstAttend: p.firstAttend || '',
+        sourceOriginal: p.sourceOriginal || '',
+        source: p.sourceOriginal || '',
+        sourceOther: p.sourceOther || '',
+        mediaConsent: p.mediaConsent || '',
+        ecertConsent: p.ecertConsent || '',
+        postConference: p.postConference || '',
+        notes: p.notes || '',
+        mainGroup: p.mainGroup || '',
+        detailedGroup: p.detailedGroup || 'Participant',
+        preNote: p.preNote || '',
+        postNote: p.postNote || '',
+        on_site_status: p.source || defaultSourceForToday()
+      };
+    }
+
+    function mergeServerParticipant(server, local){
+      if(!server || !local) return;
+      local.id = server.candidate_id || local.id;
+      local.name = server.full_name || local.name;
+      local.email = server.email || local.email;
+      local.phone = server.phone || local.phone;
+      local.affiliation = server.affiliation || local.affiliation;
+      local.title = server.title || local.title;
+      local.titleOtherText = server.title_other_text || local.titleOtherText || '';
+      local.mainGroup = server.main_group || local.mainGroup;
+      local.detailedGroup = server.detailed_group || local.detailedGroup;
+      local.source = server.on_site_status || local.source;
+      local.status = server.checkin_status || local.status;
+      local.checkinTime = server.checkin_time || local.checkinTime;
+      local.checkinBy = server.checkin_by || local.checkinBy;
+      local.method = server.checkin_method || local.method;
+      local.counter = Number(server.checkin_count || local.counter || 0);
+      local.qrStatus = server.qr_status || local.qrStatus;
+      local.qrPayload = server.qr_payload || local.qrPayload;
+      local.preNote = server.pre_checkin_note || local.preNote || '';
+      local.postNote = server.post_checkin_note || local.postNote || '';
+      local.mediaConsent = server.media_consent || local.mediaConsent || '';
+      local.notes = server.notes || local.notes || '';
+      local.nationality = server.nationality || local.nationality || '';
+      local.country = server.country || local.country || '';
+      local.province = server.province || local.province || '';
+      local.job = server.job || local.job || '';
+      local.jobOtherInstitution = server.job_other_institution || local.jobOtherInstitution || '';
+      local.institution = server.institution || local.institution || '';
+      local.yearsExperience = server.years_expe || local.yearsExperience || '';
+      local.firstAttend = server.first_attend || local.firstAttend || '';
+      local.sourceOriginal = server.source || local.sourceOriginal || '';
+      local.sourceOther = server.source_oth || local.sourceOther || '';
+      local.ecertConsent = server.ecert_cons || local.ecertConsent || '';
+      local.postConference = server.post_conference || local.postConference || '';
+      state.selectedId = local.id;
+    }
+
+    function persistParticipant(p, successTitle, successMessage){
+      if(!(window.google && google.script && state.currentUser)){
+        toast(successTitle, successMessage);
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(res => {
+          if(res && res.ok && res.data){
+            mergeServerParticipant(res.data, p);
+            toast(successTitle, successMessage);
+            renderAll();
+          }else{
+            toast('Không lưu được dữ liệu', res?.message || 'Backend từ chối thao tác.');
+            renderAll();
+          }
+        })
+        .withFailureHandler(err => {
+          toast('Không lưu được dữ liệu', err?.message || 'Lỗi kết nối GAS.');
+          renderAll();
+        })
+        .saveParticipant(toServerParticipant(p));
+    }
+
+    function valueAt(row, index){
+      return index === undefined ? '' : String(row[index] || '').trim();
+    }
+
+    async function handleImportFile(event){
+      const file = event.target.files?.[0];
+      if(!file) return;
+      let rows;
+      if(/\.(xlsx|xls)$/i.test(file.name)){
+        if(!window.XLSX){
+          toast('Chưa tải được Excel parser', 'Hãy thử lại khi có mạng hoặc dùng file CSV template.');
+          event.target.value = '';
+          return;
+        }
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type:'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(sheet, { header:1, defval:'' });
+      }else{
+        const text = await file.text();
+        rows = parseCsv(text);
+      }
+      const [headers, ...body] = rows;
+      const normalizedHeaders = headers.map(h => normalize(h));
+      const getIndex = names => names.map(normalize).map(n => normalizedHeaders.indexOf(n)).find(i => i >= 0);
+      const idx = {
+        title:getIndex(['title']),
+        titleOtherText:getIndex(['title_other_text']),
+        name:getIndex(['full_name','Full name','Ho va ten','Họ và tên']),
+        email:getIndex(['Email']),
+        phone:getIndex(['Phone','So dien thoai','Số điện thoại']),
+        affiliation:getIndex(['Affiliation','Don vi','Đơn vị']),
+        nationality:getIndex(['nationality']),
+        country:getIndex(['country']),
+        province:getIndex(['province']),
+        job:getIndex(['job']),
+        jobOtherInstitution:getIndex(['job_other_institution','job_other_ institution','job_other','job_other_text']),
+        institution:getIndex(['institution','institution_type']),
+        yearsExperience:getIndex(['years_expe','years_experience']),
+        firstAttend:getIndex(['first_attend','first_attenc','first_attendance','first_attending']),
+        source:getIndex(['source']),
+        sourceOther:getIndex(['source_oth','source_other','source_other_text']),
+        mediaConsent:getIndex(['media_consent','media_con']),
+        ecertConsent:getIndex(['ecert_cons','ecert_consent']),
+        postConference:getIndex(['post_conference']),
+        notes:getIndex(['notes']),
+        group:getIndex(['Detailed group','Category','Nhom chi tiet','Nhóm chi tiết']),
+        preNote:getIndex(['pre_checkin_note','Pre-check-in note','Ghi chu truoc check-in','Ghi chú trước check-in'])
+      };
+      if(idx.name === undefined || idx.email === undefined || idx.affiliation === undefined){
+        toast('Template không đúng', 'Cần tối thiểu full_name, email, affiliation.');
+        event.target.value = '';
+        return;
+      }
+      const imported = body
+        .filter(r => r.some(Boolean))
+        .map(row => makeImportedParticipant(row, idx))
+        .filter(Boolean);
+      reviewImport(imported);
+      event.target.value = '';
+    }
+
+    function makeImportedParticipant(row, idx){
+      const detail = valueAt(row, idx.group) || 'Participant';
+      const group = GROUPS.find(g => normalize(g.detail) === normalize(detail)) || GROUPS[0];
+      const name = valueAt(row, idx.name);
+      const email = valueAt(row, idx.email);
+      const affiliation = valueAt(row, idx.affiliation);
+      if(!name || !email || !affiliation) return null;
+      return {
+        id: nextId(), name, email, phone:valueAt(row, idx.phone), affiliation,
+        title:valueAt(row, idx.title), mainGroup:group.main, detailedGroup:group.detail,
+        source:defaultSourceForToday(), status:'Not checked-in', checkinTime:'', checkinBy:'', method:'', counter:0,
+        qrStatus:'Not generated', qrPayload:'',
+        titleOtherText:valueAt(row, idx.titleOtherText),
+        nationality:valueAt(row, idx.nationality),
+        country:valueAt(row, idx.country),
+        province:valueAt(row, idx.province),
+        job:valueAt(row, idx.job),
+        jobOtherInstitution:valueAt(row, idx.jobOtherInstitution),
+        institution:valueAt(row, idx.institution),
+        yearsExperience:valueAt(row, idx.yearsExperience),
+        firstAttend:valueAt(row, idx.firstAttend),
+        sourceOriginal:valueAt(row, idx.source),
+        sourceOther:valueAt(row, idx.sourceOther),
+        mediaConsent:valueAt(row, idx.mediaConsent),
+        ecertConsent:valueAt(row, idx.ecertConsent),
+        postConference:valueAt(row, idx.postConference),
+        notes:valueAt(row, idx.notes),
+        preNote:idx.preNote !== undefined ? valueAt(row, idx.preNote) : valueAt(row, idx.notes),
+        postNote:''
+      };
+    }
+
+    function reviewImport(rows){
+      const existingEmails = new Map(state.participants.map(p => [normalize(p.email), p]));
+      const existingPhones = new Map(state.participants.filter(p => p.phone).map(p => [normalizePhone(p.phone), p]));
+      const seenEmails = new Map();
+      const seenPhones = new Map();
+      const clean = [];
+      const duplicates = [];
+      rows.forEach((row, index) => {
+        const reasons = [];
+        const emailKey = normalize(row.email);
+        const phoneKey = normalizePhone(row.phone);
+        if(existingEmails.has(emailKey)) reasons.push(`Trùng email với ${existingEmails.get(emailKey).name}`);
+        if(phoneKey && existingPhones.has(phoneKey)) reasons.push(`Trùng số điện thoại với ${existingPhones.get(phoneKey).name}`);
+        if(seenEmails.has(emailKey)) reasons.push(`Trùng email trong file với dòng ${seenEmails.get(emailKey) + 2}`);
+        if(phoneKey && seenPhones.has(phoneKey)) reasons.push(`Trùng số điện thoại trong file với dòng ${seenPhones.get(phoneKey) + 2}`);
+        seenEmails.set(emailKey, index);
+        if(phoneKey) seenPhones.set(phoneKey, index);
+        if(reasons.length) duplicates.push({ row, reasons });
+        else clean.push(row);
+      });
+      state.pendingImport = { clean, duplicates };
+      renderImportReview();
+      $('#importModal').classList.add('active');
+      lucide.createIcons();
+    }
+
+    function renderImportReview(){
+      const { clean, duplicates } = state.pendingImport;
+      $('#importModalBody').innerHTML = `
+        <div class="grid grid-3" style="margin-bottom:16px">
+          <div class="stat card-tight"><div class="label">Dòng hợp lệ</div><div class="num">${clean.length}</div><div class="hint">Sẽ import vào dòng trống</div></div>
+          <div class="stat card-tight"><div class="label">Dòng trùng</div><div class="num">${duplicates.length}</div><div class="hint">Cần duyệt trước khi import</div></div>
+          <div class="stat card-tight"><div class="label">Tổng dòng</div><div class="num">${clean.length + duplicates.length}</div><div class="hint">Đã đọc từ file</div></div>
+        </div>
+        ${duplicates.length ? `<div class="import-review">${duplicates.map((item, index) => duplicateCard(item, index)).join('')}</div>` : '<div class="note-box">Không phát hiện dòng trùng email hoặc số điện thoại.</div>'}
+      `;
+      lucide.createIcons();
+    }
+
+    function duplicateCard(item, index){
+      const p = item.row;
+      return `<div class="duplicate-card">
+        <h3>${escapeHtml(p.name)} · ${escapeHtml(p.detailedGroup)}</h3>
+        <div class="dup-meta">
+          <span>Email: ${escapeHtml(p.email)}</span>
+          <span>Phone: ${escapeHtml(p.phone || '-')}</span>
+          <span>Affiliation: ${escapeHtml(p.affiliation)}</span>
+          <span><b>Cảnh báo:</b> ${escapeHtml(item.reasons.join('; '))}</span>
+        </div>
+        <label class="f-checkbox" style="background:#fff">
+          <input type="checkbox" data-import-duplicate="${index}">
+          <span>Vẫn import dòng này</span>
+        </label>
+      </div>`;
+    }
+
+    function finalizeImport(includeApprovedDuplicates){
+      const approved = includeApprovedDuplicates
+        ? $$('[data-import-duplicate]:checked').map(input => state.pendingImport.duplicates[Number(input.dataset.importDuplicate)].row)
+        : [];
+      const rows = [...state.pendingImport.clean, ...approved];
+      if(window.google && google.script && state.currentUser){
+        google.script.run
+          .withSuccessHandler(res => {
+            if(!res || !res.ok){
+              toast('Không import được', res?.message || 'Backend từ chối thao tác.');
+              return;
+            }
+            const imported = res.data?.participants || [];
+            imported.forEach((serverRow, index) => {
+              const local = rows[index];
+              if(local){
+                mergeServerParticipant(serverRow, local);
+                state.participants.push(local);
+              }
+            });
+            log('IMPORT_PARTICIPANTS', 'Participants', `Imported ${imported.length} rows; skipped ${state.pendingImport.duplicates.length - approved.length} duplicates`);
+            toast('Import hoàn tất', `${imported.length} dòng đã được thêm vào Sheet.`);
+            state.pendingImport = { clean:[], duplicates:[] };
+            closeModals();
+            renderAll();
+          })
+          .withFailureHandler(err => toast('Không import được', err?.message || 'Lỗi kết nối GAS.'))
+          .commitImportRows(rows.map(toServerParticipant), [], actorEmail());
+        return;
+      }
+      state.participants.push(...rows.map((row, offset) => ({ ...row, id: nextIdFromOffset(offset) })));
+      log('IMPORT_PARTICIPANTS', 'Participants', `Imported ${rows.length} rows; skipped ${state.pendingImport.duplicates.length - approved.length} duplicates`);
+      toast('Import hoàn tất', `${rows.length} dòng đã được thêm vào danh sách.`);
+      state.pendingImport = { clean:[], duplicates:[] };
+      closeModals();
+      renderAll();
+    }
+
+    function parseCsv(text){
+      const rows = [];
+      let row = [];
+      let cell = '';
+      let inQuotes = false;
+      for(let i = 0; i < text.length; i++){
+        const ch = text[i];
+        const next = text[i + 1];
+        if(ch === '"' && inQuotes && next === '"'){ cell += '"'; i++; continue; }
+        if(ch === '"'){ inQuotes = !inQuotes; continue; }
+        if(ch === ',' && !inQuotes){ row.push(cell); cell = ''; continue; }
+        if((ch === '\n' || ch === '\r') && !inQuotes){
+          if(ch === '\r' && next === '\n') i++;
+          row.push(cell);
+          if(row.some(v => String(v || '').trim())) rows.push(row);
+          row = [];
+          cell = '';
+          continue;
+        }
+        cell += ch;
+      }
+      row.push(cell);
+      if(row.some(v => String(v || '').trim())) rows.push(row);
+      return rows;
+    }
+
+    function downloadBlob(content, filename, type){
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function closeModals(){
+      $$('.modal-backdrop').forEach(m => m.classList.remove('active'));
+    }
+
+    function toggleFullscreen(){
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+
+    function statCard(label, num, hint, pct){
+      return `<div class="stat"><div class="label">${escapeHtml(label)}</div><div class="num">${num}</div><div class="hint">${escapeHtml(hint)}</div><div class="progress"><span style="width:${pct}%"></span></div></div>`;
+    }
+
+    function groupChip(p, large = false){
+      const g = GROUPS.find(x => x.detail === p.detailedGroup) || GROUPS[GROUPS.length-1];
+      return `<span class="chip ${large ? 'group-chip-large' : ''}" style="background:${g.color}22;color:${g.color};border-color:${g.color}55"><span class="chip-dot" style="background:${g.color}"></span>${escapeHtml(g.detail)}</span>`;
+    }
+
+    function statusChip(p){
+      return p.status === 'Checked-in'
+        ? `<span class="chip status-chip-small status-ok"><span class="chip-dot" style="background:var(--ok)"></span>Đã check-in</span>`
+        : `<span class="chip status-chip-small status-warn"><span class="chip-dot" style="background:var(--warn)"></span>Chưa check-in</span>`;
+    }
+
+    function qrChip(p){
+      const ok = p.qrStatus === 'Generated' || p.qrStatus === 'Regenerated';
+      const bad = p.qrStatus === 'Error' || p.qrStatus === 'Deleted';
+      const cls = ok ? 'status-ok' : bad ? 'status-bad' : 'status-warn';
+      return `<span class="chip status-chip-small ${cls}"><span class="chip-dot" style="background:currentColor"></span>QR: ${escapeHtml(p.qrStatus)}</span>`;
+    }
+
+    function log(action, target, detail){
+      state.logs.push({time:now(),user:roleProfiles[state.role].email,action,target,detail});
+    }
+
+    function toast(title, message){
+      const item = document.createElement('div');
+      item.className = 'toast-item';
+      item.innerHTML = `<b>${escapeHtml(title)}</b><span>${escapeHtml(message)}</span>`;
+      $('#toast').appendChild(item);
+      setTimeout(() => item.remove(), 3600);
+    }
+
+    function byId(id){ return state.participants.find(p => p.id === id); }
+    function getSelected(){ return byId(state.selectedId); }
+    function now(){
+      const d = new Date();
+      const pad = n => String(n).padStart(2,'0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    // ══════════════════════════════════════════════════
+    // User Management (Admin only)
+    // ══════════════════════════════════════════════════
+    function renderUsersTable() {
+      const tbody = document.getElementById('usersTableBody');
+      if(!tbody) return;
+      const users = state.users || [];
+      if(!users.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--ink-400);padding:32px">Chưa có người dùng nào. Bấm "Thêm người dùng" để bắt đầu.</td></tr>';
+        return;
+      }
+      const roleLabel = r => ({ admin: '<span style="color:#6a2ea6;font-weight:700">Admin</span>', 'check-in': '<span style="color:#0f7895;font-weight:700">Check-in Staff</span>', staff: '<span style="color:#0f7895;font-weight:700">Check-in Staff</span>' }[r] || r);
+      const activeLabel = a => String(a).toUpperCase() === 'FALSE' || a === false
+        ? '<span style="background:#fce4ec;color:#c62828;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:700">Đã khoá</span>'
+        : '<span style="background:#e8f5e9;color:#2e7d32;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:700">Hoạt động</span>';
+      tbody.innerHTML = users.map((u, i) => `
+        <tr>
+          <td><b>${escapeHtml(u.name || u.email)}</b></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:13px">${escapeHtml(u.email)}</td>
+          <td>${roleLabel(u.role)}</td>
+          <td>${activeLabel(u.active)}</td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-soft icon-btn" title="Chỉnh sửa" onclick="openUserModal(${i})"><i data-lucide="pencil"></i></button>
+              <button class="btn btn-soft icon-btn" title="Xoá" style="color:var(--bad)" onclick="confirmDeleteUser('${escapeHtml(u.email)}')"><i data-lucide="trash-2"></i></button>
+            </div>
+          </td>
+        </tr>`).join('');
+      lucide.createIcons();
+    }
+
+    function loadUsersFromGAS() {
+      const tbody = document.getElementById('usersTableBody');
+      if(tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--ink-400);padding:32px">Đang tải...</td></tr>';
+      if(window.google && google.script) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if(res && res.ok && res.data) {
+              state.users = res.data;
+            } else {
+              state.users = [];
+            }
+            renderUsersTable();
+          })
+          .withFailureHandler(function() {
+            state.users = [];
+            renderUsersTable();
+            toast('Lỗi', 'Không tải được danh sách người dùng.');
+          })
+          .listUsers(actorEmail());
+      } else {
+        // Standalone demo
+        state.users = state.users || MOCK_USERS.map(u => ({ email: u.email, name: u.name, role: u.role, active: 'TRUE' }));
+        renderUsersTable();
+      }
+    }
+
+    function openUserModal(indexOrNull) {
+      const form = document.getElementById('userForm');
+      const title = document.getElementById('userModalTitle');
+      const emailInput = document.getElementById('userEmailInput');
+      form.reset();
+      if(indexOrNull !== undefined && indexOrNull !== null) {
+        const u = state.users[indexOrNull];
+        title.textContent = 'Chỉnh sửa người dùng';
+        form.elements.userName.value = u.name || '';
+        form.elements.userEmail.value = u.email || '';
+        form.elements.userRole.value = (u.role === 'staff') ? 'check-in' : (u.role || 'check-in');
+        form.elements.userActive.value = String(u.active).toUpperCase() === 'FALSE' ? 'FALSE' : 'TRUE';
+        form.elements.originalEmail.value = u.email || '';
+        if(emailInput) emailInput.readOnly = true; // can't change email of existing user
+      } else {
+        title.textContent = 'Thêm người dùng';
+        form.elements.userActive.value = 'TRUE';
+        form.elements.originalEmail.value = '';
+        if(emailInput) emailInput.readOnly = false;
+      }
+      $('#userModal').classList.add('active');
+    }
+
+    function saveUserForm(e) {
+      e.preventDefault();
+      const form = document.getElementById('userForm');
+      const data = {
+        email: form.elements.userEmail.value.trim().toLowerCase(),
+        name: form.elements.userName.value.trim(),
+        role: form.elements.userRole.value,
+        active: form.elements.userActive.value,
+        originalEmail: form.elements.originalEmail.value.trim().toLowerCase(),
+        actorEmail: actorEmail()
+      };
+      if(!data.email || !data.name) { toast('Lỗi', 'Vui lòng điền đầy đủ thông tin.'); return; }
+
+      // Optimistic update
+      const isEdit = !!data.originalEmail;
+      if(isEdit) {
+        const idx = state.users.findIndex(u => u.email.toLowerCase() === data.originalEmail);
+        if(idx >= 0) state.users[idx] = { email: data.email, name: data.name, role: data.role, active: data.active };
+      } else {
+        if(state.users.find(u => u.email.toLowerCase() === data.email)) {
+          toast('Lỗi', 'Email này đã tồn tại trong hệ thống.');
+          return;
+        }
+        state.users.push({ email: data.email, name: data.name, role: data.role, active: data.active });
+      }
+      renderUsersTable();
+      closeModals();
+      toast(isEdit ? 'Đã cập nhật' : 'Đã thêm', data.name);
+
+      if(window.google && google.script) {
+        google.script.run
+          .withFailureHandler(function(err) { toast('Lỗi lưu', err.message || 'Không lưu được vào sheet.'); })
+          .saveUser(data);
+      }
+      log('SAVE_USER', data.email, (isEdit ? 'Updated' : 'Created') + ' user ' + data.name + ' role=' + data.role);
+    }
+
+    function confirmDeleteUser(email) {
+      if(!confirm('Xác nhận xoá người dùng "' + email + '"?\n\nHành động này không thể hoàn tác.')) return;
+      const idx = state.users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+      if(idx < 0) return;
+      const u = state.users[idx];
+      state.users.splice(idx, 1);
+      renderUsersTable();
+      toast('Đã xoá', u.name || email);
+      if(window.google && google.script) {
+        google.script.run
+          .withFailureHandler(function(err) { toast('Lỗi', 'Không xoá được: ' + (err.message || '')); })
+          .deleteUser(email, actorEmail());
+      }
+      log('DELETE_USER', email, 'Deleted user ' + (u.name || email));
+    }
+
+    function nextId(){
+      const max = state.participants.reduce((m,p) => Math.max(m, Number(p.id.split('-')[1]) || 0), 0);
+      return `MT2026-${String(max + 1).padStart(4,'0')}`;
+    }
+    function nextIdFromOffset(offset){
+      const max = state.participants.reduce((m,p) => Math.max(m, Number(p.id.split('-')[1]) || 0), 0);
+      return `MT2026-${String(max + offset + 1).padStart(4,'0')}`;
+    }
+    function searchableText(p){ return normalize([p.id,p.name,p.email,p.phone,p.affiliation,p.title,p.mainGroup,p.detailedGroup,p.source,p.preNote,p.postNote].join(' ')); }
+    function normalize(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+    function normalizePhone(s){ return String(s || '').replace(/[^\d+]/g, '').replace(/^00/, '+'); }
+    function initials(name){ return name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase(); }
+    function escapeHtml(value){
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+    function emptyState(text){ return `<div class="person-empty">${escapeHtml(text)}</div>`; }
+
+    init();
+  </script>
+</body>
+</html>
