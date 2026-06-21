@@ -73,6 +73,11 @@ function routeAction_(body) {
     case 'save_user':        return Api_saveUser(body, actor);
     case 'delete_user':      return Api_deleteUser(body, actor);
 
+    // ── Day management (Admin only) ──
+    case 'open_day':         return Api_openDay(body, actor);
+    case 'close_day':        return Api_closeDay(actor);
+    case 'day_stats':        return Api_dayStats(actor);
+
     // ── Settings ──
     case 'get_settings':     return success_(Settings_getAll());
     case 'groups':           return success_(Groups_list());
@@ -113,7 +118,8 @@ function Api_bootstrap(actor) {
     const safeSettings = {};
     Object.keys(settings).forEach(function(k) { safeSettings[k] = String(settings[k] || ''); });
     const dashboard = Dashboard_getSummary();
-    return success_({ user: actor, settings: safeSettings, groups: groups, participants: participants, dashboard: dashboard });
+    const dayStats = Dashboard_getDayStats();
+    return success_({ user: actor, settings: safeSettings, groups: groups, participants: participants, dashboard: dashboard, dayStats: dayStats });
   } catch (err) {
     return failure_(err.message);
   }
@@ -287,6 +293,62 @@ function Api_deleteUser(body, actor) {
   ss.getSheetByName(APP_CONFIG.sheets.users).deleteRow(found.__rowNumber);
   Audit_log('DELETE_USER', APP_CONFIG.sheets.users, email, 'user', JSON.stringify(found), '', '', actor.email);
   return success_({ deleted: email });
+}
+
+// ─── Day Management ───────────────────────────────────────────────────────────
+
+function Settings_update_(key, value, actorEmail) {
+  const now = nowIso_();
+  const headers = ['key', 'value', 'description', 'updated_at', 'updated_by'];
+  const settings = readObjects_(APP_CONFIG.sheets.settings);
+  const row = settings.find(function(s) { return s.key === key; });
+  if (row) {
+    updateObjectAtRow_(APP_CONFIG.sheets.settings, headers, row.__rowNumber,
+      { key: key, value: value, description: row.description || '', updated_at: now, updated_by: actorEmail || '' });
+  } else {
+    appendObjects_(APP_CONFIG.sheets.settings, headers,
+      [{ key: key, value: value, description: '', updated_at: now, updated_by: actorEmail || '' }]);
+  }
+}
+
+function Api_openDay(body, actor) {
+  if (actor.role !== 'admin') return failure_('Chỉ Admin mới được mở ngày check-in');
+  const label = String(body.day_label || '').trim();
+  if (!label) return failure_('Vui lòng nhập tên ngày (ví dụ: Ngày 1 · 19/07/2026)');
+
+  const now = nowIso_();
+  Settings_update_('current_day_label', label, actor.email);
+  Settings_update_('current_day_open', 'true', actor.email);
+  Settings_update_('current_day_start', now, actor.email);
+
+  // Batch reset checkin_status to "Not checked-in" for the new day
+  const resetCount = resetDailyStatus_();
+
+  Audit_log('OPEN_DAY', 'Settings', label, 'current_day_open', 'false', 'true', 'Reset ' + resetCount + ' participants', actor.email);
+  return success_({ day_label: label, open: true, start: now, reset_count: resetCount });
+}
+
+function Api_closeDay(actor) {
+  if (actor.role !== 'admin') return failure_('Chỉ Admin mới được đóng ngày check-in');
+  const settings = Settings_getAll();
+  const label = settings.current_day_label || '';
+  Settings_update_('current_day_open', 'false', actor.email);
+  Audit_log('CLOSE_DAY', 'Settings', label, 'current_day_open', 'true', 'false', '', actor.email);
+  return success_({ day_label: label, open: false });
+}
+
+function Api_dayStats(actor) {
+  try {
+    const settings = Settings_getAll();
+    return success_({
+      current_day_label: settings.current_day_label || '',
+      current_day_open: settings.current_day_open === 'true',
+      current_day_start: settings.current_day_start || '',
+      day_stats: Dashboard_getDayStats()
+    });
+  } catch (err) {
+    return failure_(err.message);
+  }
 }
 
 // ─── Legacy GAS UI functions (kept for direct GAS access) ────────────────────

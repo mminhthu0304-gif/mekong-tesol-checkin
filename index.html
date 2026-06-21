@@ -190,6 +190,24 @@ textarea.form-input{resize:vertical;min-height:80px}
 .spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite;margin-right:12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ── Day Badge ── */
+.day-badge{display:flex;align-items:center;gap:8px;background:var(--grad);color:#fff;padding:10px 14px;font-size:13px;font-weight:700;border-radius:10px;margin-bottom:12px}
+.day-badge-open{background:linear-gradient(90deg,#0f6b34,#1a8f45)}
+.day-badge-closed{background:linear-gradient(90deg,#6b1028,#b4235a)}
+.day-badge-none{background:rgba(0,0,0,.08);color:var(--ink2)}
+.day-dot{width:8px;height:8px;border-radius:50%;background:#a5f3a0;animation:pulse 1.2s ease-in-out infinite}
+.day-badge-closed .day-dot{background:#f5b8cc;animation:none}
+.day-badge-none .day-dot{background:var(--ink2);animation:none}
+
+/* ── Day stats table ── */
+.day-stat-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.day-stat-row:last-child{border-bottom:0}
+.day-stat-label{flex:1;font-weight:700}
+.day-stat-num{font-size:18px;font-weight:800;color:var(--p);min-width:36px;text-align:right}
+.day-stat-total{font-size:12px;color:var(--ink2);min-width:60px;text-align:right}
+.day-stat-bar-wrap{flex:1;background:var(--line-light);border-radius:4px;height:6px;overflow:hidden}
+.day-stat-bar{height:100%;background:var(--grad);border-radius:4px;transition:width .6s}
+
 /* ── Success flash ── */
 .success-flash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;animation:flashIn .25s ease;color:#fff;text-align:center;padding:32px}
 .success-flash.warn-flash{background:var(--warn)}
@@ -321,6 +339,12 @@ textarea.form-input{resize:vertical;min-height:80px}
   <!-- ── TAB: CHECK-IN ── -->
   <div id="tab-content-checkin" class="container">
 
+    <!-- Day badge -->
+    <div id="dayBadge" class="day-badge day-badge-none" style="display:none">
+      <span class="day-dot"></span>
+      <span id="dayBadgeText">Chưa mở ngày check-in</span>
+    </div>
+
     <!-- Scanner -->
     <div class="scanner-wrap">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -423,6 +447,10 @@ textarea.form-input{resize:vertical;min-height:80px}
   <!-- ── TAB: DASHBOARD ── -->
   <div id="tab-content-dashboard" class="container" style="display:none">
     <div class="stat-grid" id="statGrid"></div>
+    <div class="card" style="margin-bottom:14px">
+      <h3 style="margin-bottom:14px;font-size:16px">📅 Thống kê theo ngày</h3>
+      <div id="dayStatsBlock"></div>
+    </div>
     <div class="card">
       <h3 style="margin-bottom:14px;font-size:16px">Check-in theo nhóm</h3>
       <div id="groupStats"></div>
@@ -435,15 +463,36 @@ textarea.form-input{resize:vertical;min-height:80px}
 
     <!-- Sub-tabs -->
     <div style="display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px">
-      <button class="filter-chip active" onclick="switchAdminTab('import')" id="atab-import">📥 Import</button>
+      <button class="filter-chip active" onclick="switchAdminTab('day')" id="atab-day">📅 Ngày</button>
+      <button class="filter-chip" onclick="switchAdminTab('import')" id="atab-import">📥 Import</button>
       <button class="filter-chip" onclick="switchAdminTab('qr')" id="atab-qr">🔲 QR</button>
       <button class="filter-chip" onclick="switchAdminTab('users')" id="atab-users">👥 Users</button>
       <button class="filter-chip" onclick="switchAdminTab('export')" id="atab-export">📤 Export</button>
       <button class="filter-chip" onclick="switchAdminTab('backup')" id="atab-backup">💾 Backup</button>
     </div>
 
+    <!-- Day Management -->
+    <div id="admin-day">
+      <div class="card">
+        <h3 style="margin-bottom:14px;font-size:16px">📅 Quản lý ngày check-in</h3>
+        <div id="currentDayStatus" style="margin-bottom:16px"></div>
+        <div class="form-group">
+          <label class="form-label">Tên ngày mới <span class="req">*</span></label>
+          <input type="text" class="form-input" id="dayLabelInput" placeholder="Ngày 1 · 19/07/2026">
+          <div style="font-size:12px;color:var(--ink2);margin-top:4px">Ví dụ: Ngày 1, Ngày 2, Buổi sáng 19/07...</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ok" onclick="openDay()" style="flex:2">▶️ Mở ngày check-in</button>
+          <button class="btn btn-danger" onclick="closeDay()" style="flex:1">⏹ Đóng</button>
+        </div>
+        <div style="background:#fff9e6;border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:12px 14px;margin-top:14px;font-size:13px;color:var(--ink)">
+          ⚠️ <strong>Mở ngày mới sẽ reset toàn bộ check-in về "Chưa check-in"</strong> để đếm lại từ đầu cho ngày đó. Thống kê lịch sử vẫn được giữ nguyên trong CheckinLogs.
+        </div>
+      </div>
+    </div>
+
     <!-- Import -->
-    <div id="admin-import">
+    <div id="admin-import" style="display:none">
       <div class="card">
         <h3 style="margin-bottom:12px">Import danh sách Excel/CSV</h3>
         <p style="font-size:13px;color:var(--ink2);margin-bottom:14px">File phải có các cột: full_name, email, affiliation, detailed_group (và các trường tuỳ chọn khác theo template)</p>
@@ -713,12 +762,14 @@ const STATE = {
   listFilter: 'all',
   cameraStream: null,
   scanLoop: null,
-  currentAdminTab: 'import',
+  currentAdminTab: 'day',
   importRows: [],
   importClean: [],
   importDups: [],
   qrTargetId: null,
-  searchTimer: null
+  searchTimer: null,
+  currentDay: { label: '', open: false, start: '' },
+  dayStats: []
 };
 
 // ── API ───────────────────────────────────────────────────────────────────────
@@ -781,6 +832,12 @@ async function loadApp() {
   STATE.groups = res.data.groups || [];
   STATE.settings = res.data.settings || {};
   STATE.dashboard = res.data.dashboard || null;
+  STATE.dayStats = res.data.dayStats || [];
+  STATE.currentDay = {
+    label: (res.data.settings || {}).current_day_label || '',
+    open: (res.data.settings || {}).current_day_open === 'true',
+    start: (res.data.settings || {}).current_day_start || ''
+  };
 
   // Setup UI
   document.getElementById('topbarName').textContent = STATE.session.name;
@@ -796,6 +853,7 @@ async function loadApp() {
   populateGroupDropdowns();
   renderDashboard();
   renderList();
+  renderDayBadge();
 
   show('screen-app');
   hide('screen-login');
@@ -1360,6 +1418,116 @@ async function submitWalkin() {
   renderList();
 }
 
+// ── DAY MANAGEMENT ───────────────────────────────────────────────────────────
+
+function renderDayBadge() {
+  const d = STATE.currentDay;
+  const badge = document.getElementById('dayBadge');
+  const text = document.getElementById('dayBadgeText');
+  if (!badge || !text) return;
+
+  if (!d.label) {
+    badge.className = 'day-badge day-badge-none';
+    text.textContent = 'Chưa mở ngày check-in — Admin vào tab Ngày để bắt đầu';
+    badge.style.display = '';
+    return;
+  }
+  badge.style.display = '';
+  if (d.open) {
+    badge.className = 'day-badge day-badge-open';
+    text.textContent = d.label + ' · Đang mở ✅';
+  } else {
+    badge.className = 'day-badge day-badge-closed';
+    text.textContent = d.label + ' · Đã đóng 🔒';
+  }
+
+  // Update admin day status section
+  const status = document.getElementById('currentDayStatus');
+  if (status) {
+    if (d.label) {
+      status.innerHTML = `
+        <div class="${d.open ? 'status-banner status-ok' : 'status-banner status-err'}" style="margin-bottom:0">
+          ${d.open ? '✅ Đang mở:' : '🔒 Đã đóng:'} <strong>${d.label}</strong>
+          ${d.start ? `<span style="font-weight:400;font-size:12px;margin-left:8px">Từ ${fmtTime(d.start)}</span>` : ''}
+        </div>`;
+    } else {
+      status.innerHTML = '<div style="color:var(--ink2);font-size:13px;padding:8px 0">Chưa có ngày nào được mở</div>';
+    }
+  }
+}
+
+async function openDay() {
+  const label = (document.getElementById('dayLabelInput') || {}).value || '';
+  if (!label.trim()) { toast('Nhập tên ngày trước (ví dụ: Ngày 1)', 'err'); return; }
+
+  const participants = STATE.participants.filter(p => p.checkin_status === 'Checked-in');
+  const msg = `Mở "${label.trim()}"?\n\n${participants.length > 0 ? participants.length + ' người đang "Checked-in" sẽ được reset về "Chưa check-in" cho ngày mới.' : 'Chưa có ai check-in.'}\n\nThống kê lịch sử vẫn giữ nguyên.`;
+  if (!confirm(msg)) return;
+
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    STATE.currentDay = { label: label.trim(), open: true, start: new Date().toISOString() };
+    STATE.participants.forEach(p => { if (p.checkin_status === 'Checked-in') { p.checkin_status = 'Not checked-in'; p.checkin_time = ''; p.checkin_by = ''; } });
+    renderList(); renderDayBadge(); toast('✅ Đã mở ' + label.trim() + ' (demo)'); return;
+  }
+
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Đang xử lý...';
+  const res = await api('open_day', { day_label: label.trim() });
+  btn.disabled = false; btn.textContent = '▶️ Mở ngày check-in';
+
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+
+  STATE.currentDay = { label: res.data.day_label, open: true, start: res.data.start };
+  // Sync local participant state
+  STATE.participants.forEach(p => { if (p.checkin_status === 'Checked-in') { p.checkin_status = 'Not checked-in'; p.checkin_time = ''; p.checkin_by = ''; } });
+  renderList(); renderDayBadge();
+  toast(`✅ Đã mở ${res.data.day_label} — reset ${res.data.reset_count} người`);
+}
+
+async function closeDay() {
+  const d = STATE.currentDay;
+  if (!d.label) { toast('Chưa có ngày nào đang mở', 'warn'); return; }
+  if (!confirm(`Đóng check-in "${d.label}"?`)) return;
+
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    STATE.currentDay.open = false; renderDayBadge(); toast('Check-in đã đóng (demo)', 'warn'); return;
+  }
+
+  const res = await api('close_day');
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  STATE.currentDay.open = false;
+  renderDayBadge();
+  toast('Check-in đã đóng');
+}
+
+async function refreshDayStats() {
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') return;
+  const res = await api('day_stats');
+  if (res.ok) {
+    STATE.dayStats = res.data.day_stats || [];
+    renderDayStatsBlock();
+  }
+}
+
+function renderDayStatsBlock() {
+  const el = document.getElementById('dayStatsBlock');
+  if (!el) return;
+  const stats = STATE.dayStats || [];
+  if (!stats.length) {
+    el.innerHTML = '<div style="color:var(--ink2);font-size:13px;padding:10px 0">Chưa có dữ liệu check-in theo ngày</div>';
+    return;
+  }
+  const max = Math.max(...stats.map(s => s.unique_checkins), 1);
+  el.innerHTML = stats.map(s => `
+    <div class="day-stat-row">
+      <div class="day-stat-label">${s.day_label}</div>
+      <div class="day-stat-bar-wrap"><div class="day-stat-bar" style="width:${Math.round(s.unique_checkins/max*100)}%"></div></div>
+      <div class="day-stat-num">${s.unique_checkins}</div>
+      <div class="day-stat-total">/ ${s.total_checkins} lần</div>
+    </div>
+  `).join('');
+}
+
 // ── LIST ─────────────────────────────────────────────────────────────────────
 
 function setListFilter(f, btn) {
@@ -1478,6 +1646,7 @@ async function refreshDashboard() {
   if (GAS_URL !== 'YOUR_GAS_WEB_APP_URL_HERE') {
     const res = await api('dashboard');
     if (res.ok) { STATE.dashboard = res.data.summary; }
+    await refreshDayStats();
   }
   renderDashboard();
 }
@@ -1489,10 +1658,12 @@ function renderDashboard() {
 
   document.getElementById('statGrid').innerHTML = `
     <div class="stat-card"><div class="stat-num">${d.total}</div><div class="stat-label">Tổng danh sách</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--ok)">${d.checked}</div><div class="stat-label">Đã check-in</div><div class="stat-rate">${rate}%</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--ok)">${d.checked}</div><div class="stat-label">Đã check-in hôm nay</div><div class="stat-rate">${rate}%</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--err)">${d.notChecked}</div><div class="stat-label">Chưa check-in</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--g)">${rate}%</div><div class="stat-label">Tỉ lệ check-in</div></div>
   `;
+
+  renderDayStatsBlock();
 
   const byGroup = d.byGroup || {};
   document.getElementById('groupStats').innerHTML = Object.entries(byGroup).map(([group, data]) => {

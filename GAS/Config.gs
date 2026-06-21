@@ -93,5 +93,8 @@ const IMPORT_TEMPLATE_HEADERS = [
 const SETTINGS_DEFAULTS = [
   ['onsite_registration_date', '2026-07-19', 'Date used to mark newly added people as On-site Registration'],
   ['allow_staff_delete', 'false', 'Whether check-in staff can delete participants'],
-  ['qr_payload_format', 'full_name|email', 'QR payload format. App matches by email first.']
+  ['qr_payload_format', 'full_name|email', 'QR payload format. App matches by email first.'],
+  ['current_day_label', '', 'Label ngày check-in hiện tại (ví dụ: Ngày 1 · 19/07/2026)'],
+  ['current_day_open', 'false', 'Trạng thái mở/đóng check-in ngày hiện tại'],
+  ['current_day_start', '', 'Timestamp khi admin mở ngày hiện tại']
 ];
