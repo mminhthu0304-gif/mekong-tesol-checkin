@@ -217,6 +217,62 @@ textarea.form-input{resize:vertical;min-height:80px}
   .person-actions .btn{min-width:unset}
   .form-row{grid-template-columns:1fr}
 }
+
+/* ══ PREMIUM PERSON CARD ═════════════════════════════════════════════════════ */
+.pc-card{border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-bottom:14px;box-shadow:0 8px 32px rgba(106,46,166,.13)}
+.pc-hero{padding:22px 20px 28px;position:relative}
+.pc-group-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;opacity:.65;margin-bottom:10px}
+.pc-name{font-size:26px;font-weight:800;line-height:1.2}
+.pc-body{background:#fff;padding:20px}
+/* Status banner compact */
+.pc-status-ok{display:flex;align-items:center;gap:8px;background:#e8f9ef;color:var(--ok);border:1.5px solid #a3e4b8;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:14px}
+.pc-status-pending{display:flex;align-items:center;gap:8px;background:#fff3e0;color:#b06000;border:1.5px solid #fdd28a;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:14px}
+/* Notes */
+.pc-note{border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:14px}
+.pc-note-pre{background:#fffbeb;border-left:4px solid #f59e0b}
+.pc-note-post{background:#eff6ff;border-left:4px solid #5aa7e8}
+.pc-note-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--ink2);margin-bottom:5px}
+.pc-note-txt{font-size:14px;line-height:1.5}
+/* Info */
+.pc-info{display:flex;flex-direction:column;gap:11px;margin-bottom:18px}
+.pc-info-row{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink)}
+.pc-info-icon{font-size:15px;width:22px;flex-shrink:0;margin-top:1px}
+/* Consent badge */
+.consent-yes{color:var(--ok);font-weight:700}
+.consent-no{color:var(--err);font-weight:700}
+/* Actions */
+.pc-btn-checkin{min-height:56px;font-size:16px;border-radius:12px;width:100%;margin-bottom:10px;background:linear-gradient(135deg,#1a8f45,#0f6b34);color:#fff}
+.pc-btn-already{display:flex;align-items:center;justify-content:center;gap:8px;background:#e8f9ef;color:var(--ok);border-radius:12px;padding:14px;font-weight:700;font-size:14px;margin-bottom:10px;border:1.5px solid #a3e4b8}
+.pc-secondary{display:flex;gap:8px;margin-bottom:12px}
+.pc-secondary .btn{flex:1;font-size:13px;min-height:44px}
+.pc-undo-btn{border-color:var(--err)!important;color:var(--err)!important}
+.pc-footer{display:flex;gap:8px}
+.pc-close{flex:2;min-height:50px;font-size:14px;font-weight:700}
+.pc-add{flex:1;min-height:50px;font-size:13px}
+
+/* ══ LIST TABLE ══════════════════════════════════════════════════════════════ */
+.list-controls-top{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.list-filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.list-filter-bar select{flex:1;min-width:130px;border:1.5px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;background:#fff;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235a5878'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.bulk-bar{display:flex;align-items:center;gap:10px;background:#fdeef3;border:1.5px solid #f5b8cc;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:13px;font-weight:700}
+.bulk-bar button{background:var(--err);color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;margin-left:auto}
+.lt-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);transition:background .15s}
+.lt-row:last-child{border-bottom:0}
+.lt-row:hover{background:var(--line-light)}
+.lt-row.lt-selected{background:rgba(106,46,166,.06)}
+.lt-check{width:17px;height:17px;flex-shrink:0;accent-color:var(--p);cursor:pointer}
+.lt-mark{width:22px;text-align:center;font-size:14px;flex-shrink:0}
+.lt-body{flex:1;cursor:pointer;min-width:0}
+.lt-name{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lt-sub{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.lt-chip{padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;flex-shrink:0;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis}
+.lt-province{font-size:12px;color:var(--ink2);flex-shrink:0;width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.lt-btns{display:flex;gap:4px;flex-shrink:0}
+.lt-btn{padding:6px 10px;border-radius:8px;font-size:13px;background:var(--line-light);border:1px solid var(--line);cursor:pointer;transition:background .15s;min-height:34px}
+.lt-btn:hover{background:var(--line)}
+.lt-btn-del{color:var(--err)}
+.list-hdr{display:flex;align-items:center;gap:10px;padding:8px 14px;font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--line)}
+@media(max-width:500px){.lt-province{display:none}.lt-chip{max-width:80px}}
 </style>
 </head>
 <body>
@@ -330,15 +386,35 @@ textarea.form-input{resize:vertical;min-height:80px}
 
   <!-- ── TAB: LIST ── -->
   <div id="tab-content-list" class="container" style="display:none">
-    <div class="filter-row" id="listFilters">
-      <button class="filter-chip active" onclick="setListFilter('all')">Tất cả</button>
-      <button class="filter-chip" onclick="setListFilter('checked_in')">✅ Đã check-in</button>
-      <button class="filter-chip" onclick="setListFilter('not_checked_in')">⏳ Chưa check-in</button>
+    <!-- Controls top row -->
+    <div class="list-controls-top">
+      <input type="search" class="search-input" id="listSearch" placeholder="Tên, email, đơn vị..." oninput="renderList()" style="flex:1;font-size:14px;padding:10px 14px">
+      <button class="btn btn-primary btn-sm" onclick="openWalkinModal()">➕ Thêm</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportData('all')" id="listExportBtn">📤 Xuất</button>
     </div>
-    <div class="search-row">
-      <input type="search" class="search-input" id="listSearch" placeholder="Tìm trong danh sách..." oninput="renderList()">
+    <!-- Filter bar -->
+    <div class="list-filter-bar" id="listFilters">
+      <select id="listGroupFilter" onchange="renderList()" title="Lọc theo nhóm">
+        <option value="">Tất cả nhóm</option>
+      </select>
+      <button class="filter-chip active" onclick="setListFilter('all',this)">Tất cả</button>
+      <button class="filter-chip" onclick="setListFilter('checked_in',this)">✅ Đã check-in</button>
+      <button class="filter-chip" onclick="setListFilter('not_checked_in',this)">⏳ Chưa</button>
     </div>
-    <div class="list-count" id="listCount"></div>
+    <!-- Bulk actions (hidden until items selected) -->
+    <div class="bulk-bar" id="bulkBar" style="display:none">
+      <input type="checkbox" id="selectAllChk" class="lt-check" onchange="toggleSelectAll(this)">
+      <span id="bulkCount">0 đã chọn</span>
+      <button onclick="deleteSelected()">🗑️ Xoá đã chọn</button>
+    </div>
+    <!-- Count + select all header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="list-count" id="listCount"></div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);cursor:pointer" id="selectAllLabel" style="display:none">
+        <input type="checkbox" id="selectAllChk2" class="lt-check" onchange="toggleSelectAll(this)">
+        Chọn tất cả
+      </label>
+    </div>
     <div class="card" style="padding:0;overflow:hidden">
       <div id="participantList"></div>
     </div>
@@ -996,59 +1072,80 @@ function showPersonCard(id) {
   STATE.currentPerson = p;
 
   const group = getGroup(p.detailed_group);
-  const chipBg = group ? group.color_hex : '#ccc';
-  const chipFg = group ? group.text_color_hex : '#000';
+  const chipBg = group ? group.color_hex : '#e4e1f2';
+  const chipFg = group ? group.text_color_hex : '#0f0d2e';
   const checked = p.checkin_status === 'Checked-in';
+  const isAdmin = STATE.session.role === 'admin';
 
-  let statusBanner = '';
-  if (checked) {
-    statusBanner = `<div class="status-banner status-ok">✅ Đã check-in lúc ${fmtTime(p.checkin_time)} — bởi ${p.checkin_by}</div>`;
-  }
-
-  let noteSection = '';
-  if (p.pre_checkin_note) {
-    noteSection = `<div class="person-note-pre">⚠️ <strong>Ghi chú BTC:</strong> ${p.pre_checkin_note}</div>`;
-  }
-
-  const postNote = p.post_checkin_note ? `<div style="font-size:13px;color:var(--ink2);margin-top:4px;background:var(--line-light);padding:8px 12px;border-radius:8px">📝 ${p.post_checkin_note}</div>` : '';
-
-  const adminBtns = STATE.session.role === 'admin' ? `
-    <button class="btn btn-ghost btn-sm" onclick="openQrModal('${p.candidate_id}')">🔲 QR</button>
-    ${checked ? `<button class="btn btn-danger btn-sm" onclick="doUndo('${p.candidate_id}')">↩ Bỏ check-in</button>` : ''}
-  ` : '';
+  const mediaConsent = () => {
+    const v = String(p.media_consent || '').toLowerCase();
+    if (v === 'yes' || v === 'true') return '<span class="consent-yes">✅ Có</span>';
+    if (v === 'no' || v === 'false') return '<span class="consent-no">❌ Không</span>';
+    return p.media_consent || '';
+  };
 
   document.getElementById('personCard').innerHTML = `
-    <div class="card" style="padding:20px">
-      ${statusBanner}
-      ${noteSection}
-      <div class="person-header">
-        <div>
-          <div class="person-name">${p.title ? p.title + ' ' : ''}${p.full_name}</div>
-          <span class="person-chip" style="background:${chipBg};color:${chipFg}">${p.detailed_group || ''}</span>
-        </div>
+    <div class="pc-card">
+      <!-- Hero with group color -->
+      <div class="pc-hero" style="background:${chipBg};color:${chipFg}">
+        <div class="pc-group-label">${p.detailed_group || 'Không rõ nhóm'}</div>
+        <div class="pc-name">${p.title ? p.title + ' ' : ''}${p.full_name}</div>
       </div>
-      <div class="person-grid">
-        ${p.affiliation ? `<div class="person-row"><strong>Đơn vị</strong><span>${p.affiliation}</span></div>` : ''}
-        ${p.email ? `<div class="person-row"><strong>Email</strong><span>${p.email}</span></div>` : ''}
-        ${p.phone ? `<div class="person-row"><strong>SĐT</strong><span>${p.phone}</span></div>` : ''}
-        ${p.media_consent ? `<div class="person-row"><strong>Media consent</strong><span>${p.media_consent}</span></div>` : ''}
-        ${p.country ? `<div class="person-row"><strong>Quốc gia</strong><span>${p.country}</span></div>` : ''}
-        ${p.on_site_status ? `<div class="person-row"><strong>Nguồn</strong><span>${p.on_site_status}</span></div>` : ''}
-      </div>
-      ${postNote}
-      <div class="person-actions">
-        ${!checked
-          ? `<button class="btn btn-ok" onclick="doCheckin('${p.candidate_id}','QR')">✅ Xác nhận check-in</button>`
-          : `<button class="btn btn-ghost" onclick="doCheckin('${p.candidate_id}','QR')">🔁 Check-in thêm lần</button>`
+
+      <!-- Body -->
+      <div class="pc-body">
+
+        <!-- Check-in status -->
+        ${checked
+          ? `<div class="pc-status-ok">✅ Đã check-in lúc ${fmtTime(p.checkin_time)}${p.checkin_by ? ' · ' + p.checkin_by : ''}</div>`
+          : `<div class="pc-status-pending">⏳ Chưa check-in</div>`
         }
-        <button class="btn btn-ghost btn-sm" onclick="openNoteModal('${p.candidate_id}')">📝 Ghi chú</button>
-        <button class="btn btn-ghost btn-sm" onclick="openEditModal('${p.candidate_id}')">✏️ Sửa</button>
-        ${adminBtns}
+
+        <!-- Ghi chú BTC trước hội nghị -->
+        ${p.pre_checkin_note ? `
+          <div class="pc-note pc-note-pre">
+            <div class="pc-note-lbl">⚠️ Ghi chú BTC — Trước hội nghị</div>
+            <div class="pc-note-txt">${p.pre_checkin_note}</div>
+          </div>` : ''}
+
+        <!-- Thông tin chính -->
+        <div class="pc-info">
+          ${p.affiliation ? `<div class="pc-info-row"><span class="pc-info-icon">🏛️</span><span>${p.affiliation}</span></div>` : ''}
+          ${p.province ? `<div class="pc-info-row"><span class="pc-info-icon">📍</span><span>${p.province}</span></div>` : ''}
+          ${p.media_consent ? `<div class="pc-info-row"><span class="pc-info-icon">📷</span><span>Media consent: ${mediaConsent()}</span></div>` : ''}
+          ${p.country && p.country.toLowerCase() !== 'vietnam' && p.country.toLowerCase() !== 'viet nam' ? `<div class="pc-info-row"><span class="pc-info-icon">🌏</span><span>${p.country}</span></div>` : ''}
+        </div>
+
+        <!-- Ghi chú trong hội nghị (post_checkin_note) -->
+        ${p.post_checkin_note ? `
+          <div class="pc-note pc-note-post">
+            <div class="pc-note-lbl">📝 Ghi chú trong hội nghị</div>
+            <div class="pc-note-txt">${p.post_checkin_note}</div>
+          </div>` : ''}
+
+        <!-- Nút check-in chính -->
+        ${!checked
+          ? `<button class="btn pc-btn-checkin" onclick="doCheckin('${p.candidate_id}','QR')">✅ Xác nhận check-in</button>`
+          : `<div class="pc-btn-already">✅ Đã check-in thành công</div>`
+        }
+
+        <!-- Nút phụ: Ghi chú | Sửa | Bỏ check-in -->
+        <div class="pc-secondary">
+          <button class="btn btn-ghost" onclick="openNoteModal('${p.candidate_id}')">📝 Thêm ghi chú</button>
+          <button class="btn btn-ghost" onclick="openEditModal('${p.candidate_id}')">✏️ Sửa</button>
+          ${isAdmin && checked ? `<button class="btn btn-ghost pc-undo-btn" onclick="doUndo('${p.candidate_id}')">↩ Bỏ check-in</button>` : ''}
+        </div>
+
+        <!-- Đóng & Thêm người mới -->
+        <div class="pc-footer">
+          <button class="btn btn-ghost pc-close" onclick="clearPersonCard()">✕ Đóng &amp; quét tiếp</button>
+          <button class="btn btn-ghost pc-add" onclick="openWalkinModal()">➕ Người mới</button>
+        </div>
+
       </div>
-      <button class="btn btn-ghost btn-full" onclick="clearPersonCard()" style="margin-top:10px;min-height:52px;font-size:15px;border:2px solid var(--line)">✕ Đóng &amp; quét người tiếp theo</button>
     </div>
   `;
-  document.getElementById('personCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('personCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function clearPersonCard() {
@@ -1259,37 +1356,114 @@ async function submitWalkin() {
 
 // ── LIST ─────────────────────────────────────────────────────────────────────
 
-function setListFilter(f) {
+function setListFilter(f, btn) {
   STATE.listFilter = f;
   document.querySelectorAll('#listFilters .filter-chip').forEach(el => el.classList.remove('active'));
-  event.target.classList.add('active');
+  if (btn) btn.classList.add('active');
   renderList();
 }
 
 function renderList() {
   const query = (document.getElementById('listSearch') || {}).value || '';
   const q = query.toLowerCase().trim();
+  const groupFilter = (document.getElementById('listGroupFilter') || {}).value || '';
   let rows = STATE.participants.filter(p => String(p.deleted || '').toLowerCase() !== 'true');
 
   if (STATE.listFilter === 'checked_in') rows = rows.filter(p => p.checkin_status === 'Checked-in');
   if (STATE.listFilter === 'not_checked_in') rows = rows.filter(p => p.checkin_status !== 'Checked-in');
+  if (groupFilter) rows = rows.filter(p => (p.detailed_group || '').toLowerCase() === groupFilter.toLowerCase());
+  if (q) rows = rows.filter(p => [p.full_name, p.email, p.affiliation, p.detailed_group, p.province].join(' ').toLowerCase().includes(q));
 
-  if (q) rows = rows.filter(p => [p.full_name, p.email, p.affiliation, p.detailed_group].join(' ').toLowerCase().includes(q));
+  const total = rows.length;
+  const checkedCount = rows.filter(p => p.checkin_status === 'Checked-in').length;
+  document.getElementById('listCount').textContent = `${total} người · ${checkedCount} đã check-in`;
 
-  document.getElementById('listCount').textContent = `${rows.length} người`;
+  const isAdmin = STATE.session && STATE.session.role === 'admin';
+
   document.getElementById('participantList').innerHTML = rows.map(p => {
     const group = getGroup(p.detailed_group);
-    const chipStyle = group ? `background:${group.color_hex};color:${group.text_color_hex}` : '';
+    const chipStyle = group ? `background:${group.color_hex};color:${group.text_color_hex}` : 'background:var(--line);color:var(--ink2)';
     const checked = p.checkin_status === 'Checked-in';
-    return `<div class="list-item" onclick="switchTab('checkin');showPersonCard('${p.candidate_id}')">
-      <div class="list-checkin-mark ${checked ? 'mark-yes' : 'mark-no'}">${checked ? '✅' : '⏳'}</div>
-      <div style="flex:1">
-        <div style="font-weight:700;font-size:14px">${p.full_name}</div>
-        <div style="font-size:12px;color:var(--ink2)">${p.affiliation || p.email}</div>
+    const sid = CSS.escape(p.candidate_id);
+    return `<div class="lt-row" id="ltrow-${sid}">
+      <input type="checkbox" class="lt-check lt-sel" data-id="${p.candidate_id}" onchange="updateBulkBar()">
+      <div class="lt-mark">${checked ? '✅' : '⏳'}</div>
+      <div class="lt-body" onclick="switchTab('checkin');showPersonCard('${p.candidate_id}')">
+        <div class="lt-name">${p.full_name}</div>
+        <div class="lt-sub">${p.affiliation || p.email || ''}</div>
       </div>
-      <span class="result-chip" style="${chipStyle}">${p.detailed_group || ''}</span>
+      <span class="lt-chip" style="${chipStyle}">${p.detailed_group || ''}</span>
+      <div class="lt-province">${p.province || ''}</div>
+      <div class="lt-btns">
+        <button class="lt-btn" onclick="openEditModal('${p.candidate_id}')" title="Sửa">✏️</button>
+        ${isAdmin ? `<button class="lt-btn lt-btn-del" onclick="deleteOneParticipant('${p.candidate_id}')" title="Xoá">🗑️</button>` : ''}
+      </div>
     </div>`;
-  }).join('') || '<div style="padding:20px;text-align:center;color:var(--ink2)">Không có ai</div>';
+  }).join('') || '<div style="padding:28px;text-align:center;color:var(--ink2)">Không có ai</div>';
+
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  const checked = [...document.querySelectorAll('.lt-sel:checked')];
+  const bar = document.getElementById('bulkBar');
+  const cnt = document.getElementById('bulkCount');
+  if (cnt) cnt.textContent = checked.length + ' đã chọn';
+  if (bar) bar.style.display = checked.length > 0 ? '' : 'none';
+  // Sync select-all checkbox
+  const all = document.querySelectorAll('.lt-sel');
+  const allChk = document.getElementById('selectAllChk');
+  const allChk2 = document.getElementById('selectAllChk2');
+  const allChecked = all.length > 0 && checked.length === all.length;
+  if (allChk) allChk.checked = allChecked;
+  if (allChk2) allChk2.checked = allChecked;
+}
+
+function toggleSelectAll(masterChk) {
+  const checked = masterChk.checked;
+  document.querySelectorAll('.lt-sel').forEach(c => {
+    c.checked = checked;
+    const row = c.closest('.lt-row');
+    if (row) row.classList.toggle('lt-selected', checked);
+  });
+  // Sync both checkboxes
+  const allChk = document.getElementById('selectAllChk');
+  const allChk2 = document.getElementById('selectAllChk2');
+  if (allChk) allChk.checked = checked;
+  if (allChk2) allChk2.checked = checked;
+  updateBulkBar();
+}
+
+async function deleteOneParticipant(id) {
+  const p = STATE.participants.find(x => x.candidate_id === id);
+  if (!p) return;
+  if (!confirm(`Xoá "${p.full_name}"?\nHành động này không thể hoàn tác.`)) return;
+
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    STATE.participants = STATE.participants.filter(x => x.candidate_id !== id);
+    renderList(); toast('Đã xoá (demo)', 'warn'); return;
+  }
+  const res = await api('delete_participants', { candidate_ids: [id] });
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  STATE.participants = STATE.participants.filter(x => x.candidate_id !== id);
+  renderList();
+  toast('Đã xoá', 'warn');
+}
+
+async function deleteSelected() {
+  const ids = [...document.querySelectorAll('.lt-sel:checked')].map(c => c.dataset.id);
+  if (!ids.length) return;
+  if (!confirm(`Xoá ${ids.length} người đã chọn?\nHành động này không thể hoàn tác.`)) return;
+
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    STATE.participants = STATE.participants.filter(x => !ids.includes(x.candidate_id));
+    renderList(); toast(`Đã xoá ${ids.length} người (demo)`, 'warn'); return;
+  }
+  const res = await api('delete_participants', { candidate_ids: ids });
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  STATE.participants = STATE.participants.filter(x => !ids.includes(x.candidate_id));
+  renderList();
+  toast(`Đã xoá ${ids.length} người`, 'warn');
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
