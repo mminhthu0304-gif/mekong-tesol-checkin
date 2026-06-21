@@ -59,19 +59,41 @@ input,select,textarea{font:inherit;color:inherit}
 
 /* ── Scanner ── */
 .scanner-wrap{background:var(--grad);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
-.scanner-frame{position:relative;width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#090822;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center}
+.scanner-frame{position:relative;width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#090822;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .scanner-frame video,.scanner-frame canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .scanner-frame canvas{opacity:0;pointer-events:none}
-.scan-corners{position:absolute;inset:16px;pointer-events:none}
-.scan-corners span{position:absolute;width:40px;height:40px;border:3px solid #f2b0fc;box-shadow:0 0 10px rgba(242,176,252,.4)}
-.scan-corners .tl{top:0;left:0;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
-.scan-corners .tr{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
-.scan-corners .bl{bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 8px}
-.scan-corners .br{bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 8px 0}
-.scan-placeholder{text-align:center;color:rgba(230,225,255,.8);padding:20px}
-.scan-placeholder svg{display:block;margin:0 auto 12px;opacity:.7}
-.scanner-status{color:#fff;font-size:13px;opacity:.8;text-align:center;margin-top:10px;min-height:18px}
-.scanner-controls{display:flex;gap:10px;margin-top:12px}
+
+/* Corner brackets */
+.scan-corners{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.scan-box{position:relative;width:56%;aspect-ratio:1}
+.scan-box span{position:absolute;width:32px;height:32px;border:3px solid #f2b0fc;box-shadow:0 0 12px rgba(242,176,252,.6)}
+.scan-box .tl{top:0;left:0;border-right:0;border-bottom:0;border-radius:6px 0 0 0}
+.scan-box .tr{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 6px 0 0}
+.scan-box .bl{bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 6px}
+.scan-box .br{bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 6px 0}
+
+/* Scanning line animation */
+.scan-line{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#f2b0fc,transparent);border-radius:2px;animation:scanMove 1.8s ease-in-out infinite;opacity:0}
+@keyframes scanMove{0%{top:4px;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:calc(100% - 6px);opacity:0}}
+.scanner-frame.scanning .scan-line{opacity:1}
+.scanner-frame.scanning .scan-box span{border-color:#a5f3a0;box-shadow:0 0 14px rgba(165,243,160,.7)}
+
+/* Placeholder — tap-to-start */
+.scan-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(230,225,255,.9);text-align:center;padding:20px;background:rgba(9,8,34,.7);z-index:2}
+.scan-placeholder-icon{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px}
+.scan-placeholder h3{font-size:16px;margin-bottom:6px}
+.scan-placeholder p{font-size:13px;opacity:.75}
+
+/* Status bar */
+.scanner-status{display:flex;align-items:center;justify-content:center;gap:8px;color:#fff;font-size:13px;margin-top:12px;min-height:22px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#a5f3a0;flex-shrink:0;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.scanner-status.idle .status-dot{background:#9e9cc0;animation:none}
+.scanner-status.error .status-dot{background:var(--err);animation:none}
+
+/* File capture — visible on mobile */
+.cam-file-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;padding:11px;background:rgba(255,255,255,.1);border:1.5px dashed rgba(255,255,255,.25);border-radius:10px;color:rgba(255,255,255,.8);font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.cam-file-btn:active{background:rgba(255,255,255,.18)}
 
 /* ── Buttons ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 18px;border-radius:10px;font-weight:700;font-size:14px;border:0;transition:transform .1s,opacity .2s;cursor:pointer;text-decoration:none}
@@ -245,27 +267,43 @@ textarea.form-input{resize:vertical;min-height:80px}
     <!-- Scanner -->
     <div class="scanner-wrap">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <span style="color:#fff;font-weight:700;font-size:15px">📷 Quét QR</span>
-        <button class="btn btn-sm" id="camToggleBtn" onclick="toggleCamera()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)">Bật camera</button>
+        <span style="color:#fff;font-weight:800;font-size:15px">📷 Quét QR tự động</span>
+        <button class="btn btn-sm" id="camToggleBtn" onclick="toggleCamera()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);min-width:90px">Bật camera</button>
       </div>
-      <div class="scanner-frame" id="scannerFrame">
+
+      <!-- Frame — tap anywhere to start camera -->
+      <div class="scanner-frame" id="scannerFrame" onclick="onFrameTap()">
         <video id="scanVideo" autoplay playsinline muted style="display:none"></video>
         <canvas id="scanCanvas" style="display:none"></canvas>
+
+        <!-- Placeholder: shown when camera is off -->
         <div class="scan-placeholder" id="scanPlaceholder">
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h.01M14 17h.01M17 14h.01M20 14v3M17 17h3M20 20v.01"/></svg>
-          <div style="font-weight:700;margin-bottom:4px">Chưa bật camera</div>
-          <div style="font-size:12px">Bấm "Bật camera" để quét QR</div>
+          <div class="scan-placeholder-icon">📷</div>
+          <h3>Chạm để bật camera</h3>
+          <p>Hoặc bấm nút "Bật camera" bên trên</p>
         </div>
-        <div class="scan-corners"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
+
+        <!-- Corner brackets + scan line: shown when camera is on -->
+        <div class="scan-corners">
+          <div class="scan-box">
+            <span class="tl"></span><span class="tr"></span>
+            <span class="bl"></span><span class="br"></span>
+            <div class="scan-line"></div>
+          </div>
+        </div>
       </div>
-      <div class="scanner-status" id="scanStatus">Sẵn sàng</div>
-      <!-- Mobile file capture fallback -->
-      <div style="margin-top:10px;text-align:center">
-        <label style="color:rgba(200,195,255,.8);font-size:12px;cursor:pointer">
-          📁 Hoặc chụp / chọn ảnh QR
-          <input type="file" accept="image/*" capture="environment" id="qrFileInput" style="display:none" onchange="scanFromFile(this)">
-        </label>
+
+      <!-- Status bar -->
+      <div class="scanner-status idle" id="scanStatus">
+        <span class="status-dot"></span>
+        <span id="scanStatusText">Camera chưa bật — chạm vào khung để bắt đầu</span>
       </div>
+
+      <!-- File capture fallback (mobile) -->
+      <label class="cam-file-btn">
+        📁 Chụp hoặc chọn ảnh QR từ thư viện
+        <input type="file" accept="image/*" capture="environment" id="qrFileInput" style="display:none" onchange="scanFromFile(this)">
+      </label>
     </div>
 
     <!-- Search -->
@@ -738,6 +776,11 @@ function loadDemoMode(pin) {
 
 // ── CAMERA / QR ───────────────────────────────────────────────────────────────
 
+// ── Camera frame tap ──────────────────────────────────────────────────────────
+function onFrameTap() {
+  if (!STATE.cameraStream) startCamera();
+}
+
 async function toggleCamera() {
   if (STATE.cameraStream) { stopCamera(); return; }
   await startCamera();
@@ -747,16 +790,16 @@ async function startCamera() {
   const btn = document.getElementById('camToggleBtn');
   const placeholder = document.getElementById('scanPlaceholder');
   const video = document.getElementById('scanVideo');
-  const status = document.getElementById('scanStatus');
+  const frame = document.getElementById('scannerFrame');
 
   btn.textContent = 'Đang bật...';
-  status.textContent = 'Đang yêu cầu quyền camera...';
+  btn.disabled = true;
+  setScanStatus('Đang yêu cầu quyền camera...', 'idle');
 
   try {
-    // Try rear camera first, fallback to any
     let stream;
     const attempts = [
-      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 } } },
+      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 } } },
       { video: { facingMode: 'environment' } },
       { video: { facingMode: 'user' } },
       { video: true }
@@ -770,16 +813,19 @@ async function startCamera() {
     video.srcObject = stream;
     video.style.display = '';
     placeholder.style.display = 'none';
+    frame.classList.add('scanning');
     await video.play();
     btn.textContent = '⏹ Tắt camera';
-    status.textContent = 'Đặt QR vào khung để quét';
+    btn.disabled = false;
+    setScanStatus('Đang quét — đưa mã QR vào khung', 'scanning');
     startScanLoop();
   } catch (e) {
-    let msg = '❌ Không bật được camera';
-    if (e.name === 'NotAllowedError') msg = '❌ Đã từ chối quyền camera — vào Settings để cấp phép';
-    else if (e.name === 'NotFoundError') msg = '❌ Không tìm thấy camera';
-    status.textContent = msg;
-    btn.textContent = 'Bật camera';
+    let msg = 'Không bật được camera';
+    if (e.name === 'NotAllowedError') msg = 'Từ chối quyền camera — vào Cài đặt để cấp phép';
+    else if (e.name === 'NotFoundError') msg = 'Không tìm thấy camera trên thiết bị';
+    setScanStatus(msg, 'error');
+    btn.textContent = 'Thử lại';
+    btn.disabled = false;
   }
 }
 
@@ -787,10 +833,22 @@ function stopCamera() {
   if (STATE.cameraStream) { STATE.cameraStream.getTracks().forEach(t => t.stop()); STATE.cameraStream = null; }
   if (STATE.scanLoop) { cancelAnimationFrame(STATE.scanLoop); STATE.scanLoop = null; }
   const video = document.getElementById('scanVideo');
+  video.srcObject = null;
   video.style.display = 'none';
   document.getElementById('scanPlaceholder').style.display = '';
+  document.getElementById('scannerFrame').classList.remove('scanning');
   document.getElementById('camToggleBtn').textContent = 'Bật camera';
-  document.getElementById('scanStatus').textContent = 'Sẵn sàng';
+  document.getElementById('camToggleBtn').disabled = false;
+  setScanStatus('Camera chưa bật — chạm vào khung để bắt đầu', 'idle');
+  lastQrPayload = '';
+  qrCooldown = false;
+}
+
+function setScanStatus(text, mode) {
+  const el = document.getElementById('scanStatus');
+  const textEl = document.getElementById('scanStatusText');
+  el.className = 'scanner-status ' + (mode || 'idle');
+  if (textEl) textEl.textContent = text;
 }
 
 function startScanLoop() {
@@ -803,18 +861,16 @@ function startScanLoop() {
     if (!STATE.cameraStream) return;
     STATE.scanLoop = requestAnimationFrame(loop);
     const now = Date.now();
-    if (now - lastScan < 300) return; // scan every 300ms
+    if (now - lastScan < 150) return; // scan every 150ms for responsiveness
     lastScan = now;
-    if (video.readyState < 2) return;
+    if (video.readyState < 2 || !video.videoWidth) return;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0);
     try {
       const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
-      if (code && code.data) {
-        onQrDetected(code.data);
-      }
+      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+      if (code && code.data) onQrDetected(code.data);
     } catch(e) {}
   };
   STATE.scanLoop = requestAnimationFrame(loop);
@@ -832,9 +888,9 @@ function scanFromFile(input) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       const data = ctx.getImageData(0, 0, img.width, img.height);
-      const code = jsQR(data.data, img.width, img.height);
+      const code = jsQR(data.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
       if (code && code.data) onQrDetected(code.data);
-      else toast('Không đọc được QR từ ảnh', 'warn');
+      else toast('Không đọc được QR từ ảnh — thử chụp rõ hơn', 'warn');
     };
     img.src = e.target.result;
   };
@@ -846,24 +902,42 @@ let lastQrPayload = '';
 let qrCooldown = false;
 
 function onQrDetected(payload) {
-  if (qrCooldown || payload === lastQrPayload) return;
+  if (qrCooldown) return;
+  if (payload === lastQrPayload) return;
   lastQrPayload = payload;
   qrCooldown = true;
-  setTimeout(() => { qrCooldown = false; lastQrPayload = ''; }, 3000);
 
-  document.getElementById('scanStatus').textContent = '✅ Đã đọc QR — đang tìm...';
-  // Match by email (priority) or full_name|email format
-  let found = null;
-  const emailMatch = payload.match(/\|(.+)$/) || payload.match(/^([^\|]+)$/);
+  // Vibrate on mobile
+  if (navigator.vibrate) navigator.vibrate(80);
+
+  setScanStatus('✅ Đọc được QR — đang tìm người...', 'scanning');
+
   const email = payload.includes('|') ? payload.split('|')[1].trim() : payload.trim();
-  found = STATE.participants.find(p => p.qr_payload === payload)
-       || STATE.participants.find(p => p.email && p.email.toLowerCase() === email.toLowerCase());
+  const found = STATE.participants.find(p => p.qr_payload === payload)
+             || STATE.participants.find(p => p.email && p.email.toLowerCase() === email.toLowerCase());
 
   if (found) {
+    // Pause scanning briefly, show result
+    if (STATE.scanLoop) { cancelAnimationFrame(STATE.scanLoop); STATE.scanLoop = null; }
+    setScanStatus('✅ Tìm thấy — xem thông tin bên dưới', 'scanning');
     showPersonCard(found.candidate_id);
+    // Resume scanning after 4s if user doesn't interact
+    setTimeout(() => {
+      if (STATE.cameraStream && !STATE.scanLoop) {
+        lastQrPayload = '';
+        qrCooldown = false;
+        startScanLoop();
+        setScanStatus('Đang quét — đưa mã QR vào khung', 'scanning');
+      }
+    }, 4000);
   } else {
-    document.getElementById('scanStatus').textContent = '⚠️ Không tìm thấy QR này trong danh sách';
-    toast('QR không khớp với ai trong danh sách', 'warn');
+    setScanStatus('⚠️ QR không có trong danh sách', 'error');
+    toast('Mã QR này không khớp với ai trong danh sách', 'warn');
+    setTimeout(() => {
+      qrCooldown = false;
+      lastQrPayload = '';
+      if (STATE.cameraStream) setScanStatus('Đang quét — đưa mã QR vào khung', 'scanning');
+    }, 2500);
   }
 }
 

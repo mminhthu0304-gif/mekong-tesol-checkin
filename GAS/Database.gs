@@ -1,3 +1,21 @@
+function seedStaffUsers() {
+  const now = nowIso_();
+  const headers = ['email', 'name', 'role', 'pin', 'active', 'created_at', 'updated_at'];
+  const staff = [
+    { email: '', name: 'Hữu Bằng',    role: 'staff', pin: 'STAFF001', active: true, created_at: now, updated_at: now },
+    { email: '', name: 'Hồng Xuyến',  role: 'staff', pin: 'STAFF002', active: true, created_at: now, updated_at: now },
+    { email: '', name: 'Phương Trúc', role: 'staff', pin: 'STAFF003', active: true, created_at: now, updated_at: now },
+    { email: '', name: 'Gia Linh',    role: 'staff', pin: 'STAFF004', active: true, created_at: now, updated_at: now },
+    { email: '', name: 'Mỷ Thảo',    role: 'staff', pin: 'STAFF005', active: true, created_at: now, updated_at: now },
+  ];
+  const existing = readObjects_(APP_CONFIG.sheets.users);
+  const existingPins = new Set(existing.map(u => String(u.pin || '').trim()));
+  const toAdd = staff.filter(s => !existingPins.has(s.pin));
+  if (!toAdd.length) { Logger.log('Tất cả staff đã có rồi'); return; }
+  appendObjects_(APP_CONFIG.sheets.users, headers, toAdd);
+  Logger.log('Đã thêm ' + toAdd.length + ' staff: ' + toAdd.map(s => s.name).join(', '));
+}
+
 function Database_setup() {
   const ss = getSpreadsheet_();
   const created = [];
