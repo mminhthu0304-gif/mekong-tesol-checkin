@@ -1947,13 +1947,14 @@ function switchTab(name) {
 
 function switchAdminTab(name) {
   STATE.currentAdminTab = name;
-  ['import','qr','users','export','backup'].forEach(t => {
+  ['day','import','qr','users','export','backup'].forEach(t => {
     const el = document.getElementById('admin-' + t);
     const btn = document.getElementById('atab-' + t);
     if (el) el.style.display = t === name ? '' : 'none';
     if (btn) btn.classList.toggle('active', t === name);
   });
   if (name === 'users') loadUsers();
+  if (name === 'day') renderDayBadge();
 }
 
 // ── MODALS ────────────────────────────────────────────────────────────────────
