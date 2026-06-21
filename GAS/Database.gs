@@ -7,7 +7,7 @@ function Database_setup() {
     'main_group', 'detailed_group', 'color_hex', 'text_color_hex', 'priority', 'active'
   ], created);
   ensureSheet_(ss, APP_CONFIG.sheets.users, [
-    'email', 'name', 'role', 'active', 'created_at', 'updated_at'
+    'email', 'name', 'role', 'pin', 'active', 'created_at', 'updated_at'
   ], created);
   ensureSheet_(ss, APP_CONFIG.sheets.checkinLogs, [
     'log_id', 'timestamp', 'candidate_id', 'full_name', 'email', 'action',
@@ -123,10 +123,11 @@ function seedCurrentUserAsAdmin_() {
   const users = readObjects_(APP_CONFIG.sheets.users);
   if (users.some(user => normalizeText_(user.email) === normalizeText_(email))) return;
   const now = nowIso_();
-  appendObjects_(APP_CONFIG.sheets.users, ['email', 'name', 'role', 'active', 'created_at', 'updated_at'], [{
+  appendObjects_(APP_CONFIG.sheets.users, ['email', 'name', 'role', 'pin', 'active', 'created_at', 'updated_at'], [{
     email,
     name: email,
     role: 'admin',
+    pin: 'ADMIN001',
     active: true,
     created_at: now,
     updated_at: now

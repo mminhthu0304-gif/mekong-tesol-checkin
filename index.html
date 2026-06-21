@@ -1,0 +1,1556 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Mekong TESOL Check-in</title>
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ── Config — edit GAS_URL below after deploying ── */
+:root{
+  --p:#6a2ea6;--p-dark:#5420a0;--p-light:#8b4cc7;
+  --g:#dd9a4a;--g-light:#edd66d;
+  --ok:#1a8f45;--warn:#dd9a4a;--err:#b4235a;
+  --bg:#faf8ff;--bg-dark:#0f0d2e;
+  --ink:#0f0d2e;--ink2:#5a5878;
+  --line:#e4e1f2;--line-light:#f2f0fa;
+  --grad:linear-gradient(135deg,#0f0d2e 0%,#201e59 50%,#3a1f73 80%,#6a2ea6 100%);
+  --shadow:0 8px 32px rgba(106,46,166,.24);
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:var(--ink);font-size:16px;line-height:1.5}
+h1,h2,h3,h4{font-weight:800}
+button{cursor:pointer;font:inherit;border:0}
+input,select,textarea{font:inherit;color:inherit}
+
+/* ── Layout ── */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+.container{max-width:640px;margin:0 auto;width:100%;padding:16px;flex:1}
+
+/* ── Top Bar ── */
+.topbar{background:var(--grad);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);position:sticky;top:0;z-index:100}
+.topbar-logo{font-weight:800;font-size:18px;flex:1}
+.topbar-user{font-size:13px;color:rgba(255,255,255,.8);text-align:right}
+.topbar-role{display:inline-block;background:rgba(255,255,255,.2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;margin-left:6px}
+
+/* ── Login Screen ── */
+.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--grad)}
+.login-card{background:#fff;border-radius:20px;padding:32px 28px;max-width:380px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo h1{font-size:26px;color:var(--p);margin-bottom:4px}
+.login-logo p{font-size:14px;color:var(--ink2)}
+.login-label{font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:6px}
+.login-input{width:100%;border:2px solid var(--line);border-radius:12px;padding:16px 18px;font-size:20px;letter-spacing:6px;text-align:center;outline:none;transition:border-color .2s}
+.login-input:focus{border-color:var(--p);box-shadow:0 0 0 4px rgba(106,46,166,.12)}
+.login-btn{width:100%;margin-top:18px;padding:16px;background:var(--grad);color:#fff;border-radius:12px;font-size:16px;font-weight:800;border:0;transition:opacity .2s}
+.login-btn:active{opacity:.85}
+.login-err{color:var(--err);font-size:13px;text-align:center;margin-top:12px;min-height:20px}
+
+/* ── Tabs ── */
+.tabs{display:flex;border-bottom:2px solid var(--line);background:#fff;position:sticky;top:56px;z-index:90}
+.tab-btn{flex:1;padding:14px 8px;font-size:13px;font-weight:700;color:var(--ink2);background:transparent;border:0;border-bottom:3px solid transparent;transition:all .2s;cursor:pointer}
+.tab-btn.active{color:var(--p);border-bottom-color:var(--p)}
+
+/* ── Card ── */
+.card{background:#fff;border-radius:var(--r);border:1px solid var(--line);padding:18px;margin-bottom:14px}
+
+/* ── Scanner ── */
+.scanner-wrap{background:var(--grad);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.scanner-frame{position:relative;width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#090822;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center}
+.scanner-frame video,.scanner-frame canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scanner-frame canvas{opacity:0;pointer-events:none}
+.scan-corners{position:absolute;inset:16px;pointer-events:none}
+.scan-corners span{position:absolute;width:40px;height:40px;border:3px solid #f2b0fc;box-shadow:0 0 10px rgba(242,176,252,.4)}
+.scan-corners .tl{top:0;left:0;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+.scan-corners .tr{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.scan-corners .bl{bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 8px}
+.scan-corners .br{bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.scan-placeholder{text-align:center;color:rgba(230,225,255,.8);padding:20px}
+.scan-placeholder svg{display:block;margin:0 auto 12px;opacity:.7}
+.scanner-status{color:#fff;font-size:13px;opacity:.8;text-align:center;margin-top:10px;min-height:18px}
+.scanner-controls{display:flex;gap:10px;margin-top:12px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 18px;border-radius:10px;font-weight:700;font-size:14px;border:0;transition:transform .1s,opacity .2s;cursor:pointer;text-decoration:none}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:var(--shadow)}
+.btn-ok{background:var(--ok);color:#fff}
+.btn-warn{background:var(--warn);color:#fff}
+.btn-danger{background:var(--err);color:#fff}
+.btn-ghost{background:var(--line-light);color:var(--ink);border:1.5px solid var(--line)}
+.btn-full{width:100%}
+.btn-sm{padding:8px 14px;font-size:13px}
+
+/* ── Search ── */
+.search-row{display:flex;gap:8px;margin-bottom:14px}
+.search-input{flex:1;border:2px solid var(--line);border-radius:10px;padding:12px 14px;font-size:15px;outline:none;transition:border-color .2s}
+.search-input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(106,46,166,.1)}
+
+/* ── Result list ── */
+.result-list{max-height:320px;overflow-y:auto}
+.result-item{padding:14px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:12px}
+.result-item:last-child{border-bottom:0}
+.result-item:hover,.result-item:active{background:var(--line-light)}
+.result-chip{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+.result-name{font-weight:700;font-size:15px}
+.result-sub{font-size:12px;color:var(--ink2);margin-top:2px}
+
+/* ── Person Card ── */
+.person-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.person-chip{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:800;letter-spacing:.3px}
+.person-name{font-size:22px;font-weight:800;margin-bottom:4px}
+.person-grid{display:grid;gap:8px;font-size:14px;color:var(--ink2);margin:14px 0}
+.person-row{display:flex;gap:6px}
+.person-row strong{color:var(--ink);min-width:90px;flex-shrink:0}
+.person-note-pre{background:#fff9e6;border-left:4px solid var(--warn);padding:10px 14px;border-radius:0 8px 8px 0;font-size:14px;margin-bottom:12px}
+.person-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.person-actions .btn{flex:1;min-width:120px}
+
+/* ── Checkin Status banner ── */
+.status-banner{padding:14px 18px;border-radius:10px;font-weight:700;font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.status-ok{background:#e8f9ef;color:var(--ok);border:1.5px solid #a3e4b8}
+.status-warn{background:#fff3e0;color:#b06000;border:1.5px solid #fdd28a}
+.status-err{background:#fdeef3;color:var(--err);border:1.5px solid #f5b8cc}
+
+/* ── Form ── */
+.form-group{margin-bottom:14px}
+.form-label{font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:5px;display:block}
+.form-label .req{color:var(--err)}
+.form-input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;font-size:15px;outline:none;transition:border-color .2s;background:#fff}
+.form-input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(106,46,166,.1)}
+.form-select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;font-size:15px;outline:none;background:#fff;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%235a5878'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+textarea.form-input{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── Dashboard ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:var(--r);border:1px solid var(--line);padding:18px;text-align:center}
+.stat-num{font-size:36px;font-weight:800;color:var(--p);line-height:1}
+.stat-label{font-size:12px;color:var(--ink2);margin-top:4px;font-weight:600}
+.stat-rate{font-size:13px;color:var(--ok);font-weight:700;margin-top:6px}
+.group-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.group-row:last-child{border-bottom:0}
+.group-bar-wrap{flex:1;background:var(--line-light);border-radius:4px;height:8px;overflow:hidden}
+.group-bar{height:100%;border-radius:4px;transition:width .6s}
+
+/* ── List ── */
+.filter-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filter-chip{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;background:var(--line-light);border:1.5px solid var(--line);cursor:pointer;transition:all .15s}
+.filter-chip.active{background:var(--p);color:#fff;border-color:var(--p)}
+.list-count{font-size:13px;color:var(--ink2);margin-bottom:10px}
+.list-item{padding:14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s}
+.list-item:last-child{border-bottom:0}
+.list-item:hover{background:var(--line-light)}
+.list-checkin-mark{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.mark-yes{background:#e8f9ef}
+.mark-no{background:#fdeef3}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 22px;border-radius:12px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:90vw;text-align:center;animation:toastIn .25s ease;pointer-events:none}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ── Modal ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;padding:24px;padding-bottom:max(24px,env(safe-area-inset-bottom))}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:18px}
+.modal-close{float:right;background:var(--line-light);border:0;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:16px;margin-top:-4px}
+
+/* ── QR Display ── */
+.qr-display{display:flex;flex-direction:column;align-items:center;padding:20px}
+#qrCanvas{width:200px;height:200px}
+
+/* ── Loading ── */
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--ink2)}
+.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite;margin-right:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Success flash ── */
+.success-flash{position:fixed;inset:0;background:var(--ok);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;animation:flashIn .3s ease;color:#fff;text-align:center;padding:32px}
+.success-flash.warn-flash{background:var(--warn)}
+@keyframes flashIn{from{opacity:0}to{opacity:1}}
+.flash-icon{font-size:80px;margin-bottom:20px}
+.flash-name{font-size:28px;font-weight:800;margin-bottom:8px}
+.flash-group{font-size:16px;opacity:.85;margin-bottom:20px}
+.flash-info{font-size:14px;opacity:.75}
+
+/* ── Import ── */
+.import-drop{border:2px dashed var(--line);border-radius:var(--r);padding:40px 20px;text-align:center;color:var(--ink2);cursor:pointer;transition:border-color .2s}
+.import-drop:hover{border-color:var(--p)}
+.import-drop.drag-over{border-color:var(--p);background:rgba(106,46,166,.05)}
+.dup-row{padding:12px;border-radius:10px;border:1px solid var(--line);margin-bottom:8px;background:#fff9e6}
+.dup-reason{font-size:12px;color:var(--err);margin-top:4px}
+
+/* ── Responsive ── */
+@media(min-width:600px){
+  .stat-grid{grid-template-columns:repeat(4,1fr)}
+  .form-row{grid-template-columns:1fr 1fr 1fr}
+}
+@media(max-width:480px){
+  .person-actions{flex-direction:column}
+  .person-actions .btn{min-width:unset}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     LOGIN
+════════════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-login">
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <h1>Mekong TESOL</h1>
+      <p>Hệ thống Check-in · 2026</p>
+    </div>
+    <div class="form-group">
+      <div class="login-label">Nhập mã PIN của bạn</div>
+      <input type="password" class="login-input" id="pinInput" maxlength="20" placeholder="••••••••" autocomplete="off">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Đăng nhập →</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-app">
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-logo">Mekong TESOL</div>
+    <div class="topbar-user">
+      <span id="topbarName"></span>
+      <span class="topbar-role" id="topbarRole"></span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" id="mainTabs">
+    <button class="tab-btn active" onclick="switchTab('checkin')" id="tab-checkin">📷 Check-in</button>
+    <button class="tab-btn" onclick="switchTab('list')" id="tab-list">📋 Danh sách</button>
+    <button class="tab-btn admin-only" onclick="switchTab('dashboard')" id="tab-dashboard" style="display:none">📊 Dashboard</button>
+    <button class="tab-btn admin-only" onclick="switchTab('admin')" id="tab-admin" style="display:none">⚙️ Admin</button>
+  </div>
+
+  <!-- ── TAB: CHECK-IN ── -->
+  <div id="tab-content-checkin" class="container">
+
+    <!-- Scanner -->
+    <div class="scanner-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="color:#fff;font-weight:700;font-size:15px">📷 Quét QR</span>
+        <button class="btn btn-sm" id="camToggleBtn" onclick="toggleCamera()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)">Bật camera</button>
+      </div>
+      <div class="scanner-frame" id="scannerFrame">
+        <video id="scanVideo" autoplay playsinline muted style="display:none"></video>
+        <canvas id="scanCanvas" style="display:none"></canvas>
+        <div class="scan-placeholder" id="scanPlaceholder">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h.01M14 17h.01M17 14h.01M20 14v3M17 17h3M20 20v.01"/></svg>
+          <div style="font-weight:700;margin-bottom:4px">Chưa bật camera</div>
+          <div style="font-size:12px">Bấm "Bật camera" để quét QR</div>
+        </div>
+        <div class="scan-corners"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
+      </div>
+      <div class="scanner-status" id="scanStatus">Sẵn sàng</div>
+      <!-- Mobile file capture fallback -->
+      <div style="margin-top:10px;text-align:center">
+        <label style="color:rgba(200,195,255,.8);font-size:12px;cursor:pointer">
+          📁 Hoặc chụp / chọn ảnh QR
+          <input type="file" accept="image/*" capture="environment" id="qrFileInput" style="display:none" onchange="scanFromFile(this)">
+        </label>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-row">
+      <input type="search" class="search-input" id="searchInput" placeholder="Tên, email, SĐT, đơn vị..." oninput="onSearchInput(this.value)">
+      <button class="btn btn-primary" onclick="doSearch()">Tìm</button>
+    </div>
+
+    <!-- Results -->
+    <div class="card" id="resultBox" style="display:none;padding:0;overflow:hidden">
+      <div class="result-list" id="resultList"></div>
+    </div>
+
+    <!-- Person Card -->
+    <div id="personCard"></div>
+
+    <!-- Walk-in button -->
+    <button class="btn btn-ghost btn-full" onclick="openWalkinModal()" style="margin-top:8px">
+      ➕ Thêm người mới tại quầy
+    </button>
+
+  </div><!-- /tab checkin -->
+
+  <!-- ── TAB: LIST ── -->
+  <div id="tab-content-list" class="container" style="display:none">
+    <div class="filter-row" id="listFilters">
+      <button class="filter-chip active" onclick="setListFilter('all')">Tất cả</button>
+      <button class="filter-chip" onclick="setListFilter('checked_in')">✅ Đã check-in</button>
+      <button class="filter-chip" onclick="setListFilter('not_checked_in')">⏳ Chưa check-in</button>
+    </div>
+    <div class="search-row">
+      <input type="search" class="search-input" id="listSearch" placeholder="Tìm trong danh sách..." oninput="renderList()">
+    </div>
+    <div class="list-count" id="listCount"></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="participantList"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: DASHBOARD ── -->
+  <div id="tab-content-dashboard" class="container" style="display:none">
+    <div class="stat-grid" id="statGrid"></div>
+    <div class="card">
+      <h3 style="margin-bottom:14px;font-size:16px">Check-in theo nhóm</h3>
+      <div id="groupStats"></div>
+    </div>
+    <button class="btn btn-ghost btn-full" onclick="refreshDashboard()" style="margin-top:8px">🔄 Làm mới</button>
+  </div>
+
+  <!-- ── TAB: ADMIN ── -->
+  <div id="tab-content-admin" class="container" style="display:none">
+
+    <!-- Sub-tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px">
+      <button class="filter-chip active" onclick="switchAdminTab('import')" id="atab-import">📥 Import</button>
+      <button class="filter-chip" onclick="switchAdminTab('qr')" id="atab-qr">🔲 QR</button>
+      <button class="filter-chip" onclick="switchAdminTab('users')" id="atab-users">👥 Users</button>
+      <button class="filter-chip" onclick="switchAdminTab('export')" id="atab-export">📤 Export</button>
+      <button class="filter-chip" onclick="switchAdminTab('backup')" id="atab-backup">💾 Backup</button>
+    </div>
+
+    <!-- Import -->
+    <div id="admin-import">
+      <div class="card">
+        <h3 style="margin-bottom:12px">Import danh sách Excel/CSV</h3>
+        <p style="font-size:13px;color:var(--ink2);margin-bottom:14px">File phải có các cột: full_name, email, affiliation, detailed_group (và các trường tuỳ chọn khác theo template)</p>
+        <button class="btn btn-ghost btn-sm" onclick="downloadTemplate()" style="margin-bottom:14px">⬇️ Tải template CSV</button>
+        <div class="import-drop" id="importDrop" onclick="document.getElementById('importFile').click()" ondragover="e.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleImportDrop(event)">
+          <div style="font-size:32px;margin-bottom:8px">📂</div>
+          <div style="font-weight:700;margin-bottom:4px">Kéo thả file vào đây hoặc bấm để chọn</div>
+          <div style="font-size:12px;color:var(--ink2)">.xlsx, .csv</div>
+          <input type="file" id="importFile" accept=".csv,.xlsx" style="display:none" onchange="handleImportFile(this)">
+        </div>
+        <div id="importPreview" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- QR -->
+    <div id="admin-qr" style="display:none">
+      <div class="card">
+        <h3 style="margin-bottom:14px">Quản lý QR payload</h3>
+        <p style="font-size:13px;color:var(--ink2);margin-bottom:14px">QR payload là chuỗi "Tên|email" được mã hoá trong mã QR gửi cho người tham dự.</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-ghost btn-full" onclick="generateMissingQr()">🔲 Tạo QR cho người chưa có</button>
+          <button class="btn btn-ghost btn-full" onclick="generateAllQr()">🔄 Tạo lại tất cả QR</button>
+        </div>
+        <div id="qrStats" style="margin-top:16px;font-size:13px;color:var(--ink2)"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:12px">Tạo/xem QR cho một người</h3>
+        <div class="search-row">
+          <input type="search" class="search-input" id="qrSearch" placeholder="Tìm người tham dự..." oninput="searchForQr(this.value)">
+        </div>
+        <div id="qrSearchResults"></div>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div id="admin-users" style="display:none">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <h3>Quản lý Staff</h3>
+          <button class="btn btn-primary btn-sm" onclick="openUserModal()">+ Thêm</button>
+        </div>
+        <div id="userList"></div>
+      </div>
+    </div>
+
+    <!-- Export -->
+    <div id="admin-export" style="display:none">
+      <div class="card">
+        <h3 style="margin-bottom:14px">Xuất danh sách</h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-ghost btn-full" onclick="exportData('all')">📄 Tất cả người tham dự</button>
+          <button class="btn btn-ghost btn-full" onclick="exportData('checked_in')">✅ Đã check-in</button>
+          <button class="btn btn-ghost btn-full" onclick="exportData('not_checked_in')">⏳ Chưa check-in</button>
+          <button class="btn btn-ghost btn-full" onclick="exportData('onsite')">🏷️ On-site Registration</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backup -->
+    <div id="admin-backup" style="display:none">
+      <div class="card">
+        <h3 style="margin-bottom:12px">Backup dữ liệu</h3>
+        <p style="font-size:13px;color:var(--ink2);margin-bottom:14px">Tạo bản sao Google Sheet lưu vào Google Drive. Khuyến nghị backup mỗi 30 phút trong ngày sự kiện.</p>
+        <button class="btn btn-primary btn-full" onclick="doBackup()">💾 Tạo backup ngay</button>
+        <div id="backupResult" style="margin-top:14px;font-size:13px"></div>
+      </div>
+    </div>
+
+    <button class="btn btn-ghost btn-full" onclick="doLogout()" style="margin-top:24px;color:var(--err)">🚪 Đăng xuất</button>
+  </div>
+
+</div><!-- /screen-app -->
+
+<!-- ═══════════════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════════════════ -->
+
+<!-- Walk-in Modal -->
+<div class="modal-bg" id="walkinModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('walkinModal')">✕</button>
+    <div class="modal-title">➕ Thêm người mới tại quầy</div>
+    <div id="walkinForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Chức danh</label>
+          <select class="form-select" id="wi_title">
+            <option value="">--</option>
+            <option>Mr.</option><option>Ms.</option><option>Mrs.</option>
+            <option>Dr.</option><option>Prof.</option><option>Assoc. Prof.</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:2">
+          <label class="form-label">Họ và tên <span class="req">*</span></label>
+          <input type="text" class="form-input" id="wi_name" placeholder="Nguyễn Văn A">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email <span class="req">*</span></label>
+        <input type="email" class="form-input" id="wi_email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Đơn vị / Affiliation <span class="req">*</span></label>
+        <input type="text" class="form-input" id="wi_affiliation" placeholder="Trường / Tổ chức">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Số điện thoại</label>
+          <input type="tel" class="form-input" id="wi_phone" placeholder="+84...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quốc gia</label>
+          <input type="text" class="form-input" id="wi_country" placeholder="Vietnam">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nhóm <span class="req">*</span></label>
+        <select class="form-select" id="wi_group"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ghi chú</label>
+        <textarea class="form-input" id="wi_notes" placeholder="Ghi chú thêm..."></textarea>
+      </div>
+      <div style="color:var(--err);font-size:13px;min-height:18px;margin-bottom:10px" id="wiErr"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="closeModal('walkinModal')" style="flex:1">Huỷ</button>
+        <button class="btn btn-ok" onclick="submitWalkin()" style="flex:2">✅ Thêm &amp; Check-in</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Participant Modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    <div class="modal-title">✏️ Sửa thông tin</div>
+    <input type="hidden" id="edit_id">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Chức danh</label>
+        <select class="form-select" id="edit_title">
+          <option value="">--</option>
+          <option>Mr.</option><option>Ms.</option><option>Mrs.</option>
+          <option>Dr.</option><option>Prof.</option><option>Assoc. Prof.</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:2">
+        <label class="form-label">Họ và tên <span class="req">*</span></label>
+        <input type="text" class="form-input" id="edit_name">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email <span class="req">*</span></label>
+      <input type="email" class="form-input" id="edit_email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Đơn vị</label>
+      <input type="text" class="form-input" id="edit_affiliation">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Điện thoại</label>
+        <input type="tel" class="form-input" id="edit_phone">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nhóm</label>
+        <select class="form-select" id="edit_group"></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ghi chú BTC (hiện cho staff)</label>
+      <textarea class="form-input" id="edit_pre_note"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-ghost" onclick="closeModal('editModal')" style="flex:1">Huỷ</button>
+      <button class="btn btn-primary" onclick="submitEdit()" style="flex:2">💾 Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Note Modal -->
+<div class="modal-bg" id="noteModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('noteModal')">✕</button>
+    <div class="modal-title">📝 Ghi chú sau check-in</div>
+    <input type="hidden" id="note_id">
+    <div class="form-group">
+      <textarea class="form-input" id="noteText" rows="5" placeholder="Nhập ghi chú..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="closeModal('noteModal')" style="flex:1">Huỷ</button>
+      <button class="btn btn-primary" onclick="submitNote()" style="flex:2">💾 Lưu ghi chú</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR View Modal -->
+<div class="modal-bg" id="qrModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('qrModal')">✕</button>
+    <div class="modal-title" id="qrModalTitle">QR Code</div>
+    <div class="qr-display">
+      <div id="qrCanvas"></div>
+      <div id="qrPayloadText" style="font-size:12px;color:var(--ink2);margin-top:12px;word-break:break-all;text-align:center"></div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="regenerateQr()">🔄 Tạo lại QR</button>
+  </div>
+</div>
+
+<!-- User Modal -->
+<div class="modal-bg" id="userModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+    <div class="modal-title" id="userModalTitle">Thêm Staff</div>
+    <input type="hidden" id="user_original_email">
+    <div class="form-group">
+      <label class="form-label">Tên <span class="req">*</span></label>
+      <input type="text" class="form-input" id="user_name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-input" id="user_email" placeholder="(tuỳ chọn)">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">PIN <span class="req">*</span></label>
+        <input type="text" class="form-input" id="user_pin" placeholder="STAFF001">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vai trò</label>
+        <select class="form-select" id="user_role">
+          <option value="staff">Staff</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Kích hoạt</label>
+      <select class="form-select" id="user_active">
+        <option value="TRUE">✅ Đang hoạt động</option>
+        <option value="FALSE">❌ Vô hiệu hoá</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-ghost" onclick="closeModal('userModal')" style="flex:1">Huỷ</button>
+      <button class="btn btn-primary" onclick="submitUser()" style="flex:2">💾 Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════ -->
+<script>
+// ── CONFIG — replace with your deployed GAS Web App URL ──────────────────────
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwmCY43mSD3GWzVBL2zRQgvUQcchp8HVoOoik1_yBjsOFdJ2AvWMZayGmK1BwdCw4Ih8g/exec';
+// ─────────────────────────────────────────────────────────────────────────────
+
+const STATE = {
+  session: null,      // { email, name, role, pin }
+  participants: [],
+  groups: [],
+  settings: {},
+  dashboard: null,
+  currentPerson: null,
+  listFilter: 'all',
+  cameraStream: null,
+  scanLoop: null,
+  currentAdminTab: 'import',
+  importRows: [],
+  importClean: [],
+  importDups: [],
+  qrTargetId: null,
+  searchTimer: null
+};
+
+// ── API ───────────────────────────────────────────────────────────────────────
+
+async function api(action, extra = {}) {
+  const body = { action, pin: STATE.session ? STATE.session.pin : extra.pin, ...extra };
+  try {
+    const r = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body)
+    });
+    return await r.json();
+  } catch (e) {
+    return { ok: false, message: 'Lỗi kết nối: ' + e.message };
+  }
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+
+async function doLogin() {
+  const pin = document.getElementById('pinInput').value.trim();
+  const errEl = document.getElementById('loginErr');
+  if (!pin) { errEl.textContent = 'Vui lòng nhập PIN'; return; }
+  errEl.textContent = '';
+  document.getElementById('loginBtn').textContent = 'Đang đăng nhập...';
+
+  // Demo mode — remove in production
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    loadDemoMode(pin);
+    return;
+  }
+
+  const res = await api('login', { pin });
+  document.getElementById('loginBtn').textContent = 'Đăng nhập →';
+  if (!res.ok) { errEl.textContent = res.message || 'PIN không đúng'; return; }
+  STATE.session = { ...res.data, pin };
+  await loadApp();
+}
+
+document.getElementById('pinInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function doLogout() {
+  stopCamera();
+  STATE.session = null;
+  STATE.participants = [];
+  show('screen-login');
+  hide('screen-app');
+  document.getElementById('pinInput').value = '';
+}
+
+// ── BOOTSTRAP ─────────────────────────────────────────────────────────────────
+
+async function loadApp() {
+  const res = await api('bootstrap');
+  if (!res.ok) { toast('Lỗi tải dữ liệu: ' + res.message, 'err'); return; }
+  STATE.participants = res.data.participants || [];
+  STATE.groups = res.data.groups || [];
+  STATE.settings = res.data.settings || {};
+  STATE.dashboard = res.data.dashboard || null;
+
+  // Setup UI
+  document.getElementById('topbarName').textContent = STATE.session.name;
+  document.getElementById('topbarRole').textContent = STATE.session.role === 'admin' ? 'Admin' : 'Staff';
+
+  // Show admin tabs only for admin
+  if (STATE.session.role === 'admin') {
+    document.getElementById('tab-dashboard').style.display = '';
+    document.getElementById('tab-admin').style.display = '';
+  }
+
+  // Populate group dropdowns
+  populateGroupDropdowns();
+  renderDashboard();
+  renderList();
+
+  show('screen-app');
+  hide('screen-login');
+  switchTab('checkin');
+}
+
+function populateGroupDropdowns() {
+  const opts = STATE.groups.map(g => `<option value="${g.detailed_group}">${g.detailed_group}</option>`).join('');
+  ['wi_group', 'edit_group'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+}
+
+// ── DEMO MODE ─────────────────────────────────────────────────────────────────
+
+function loadDemoMode(pin) {
+  const demoUsers = {
+    'ADMIN001': { email: 'admin@mekong.edu', name: 'Admin (Demo)', role: 'admin', pin: 'ADMIN001' },
+    'STAFF001': { email: 'staff1@mekong.edu', name: 'Nguyễn Văn A', role: 'staff', pin: 'STAFF001' }
+  };
+  const u = demoUsers[pin.toUpperCase()];
+  if (!u) {
+    document.getElementById('loginErr').textContent = 'PIN demo: ADMIN001 hoặc STAFF001';
+    document.getElementById('loginBtn').textContent = 'Đăng nhập →';
+    return;
+  }
+  STATE.session = u;
+  STATE.groups = [
+    { main_group: 'Participant', detailed_group: 'Participant', color_hex: '#5aa7e8', text_color_hex: '#0f0d2e' },
+    { main_group: 'Speaker', detailed_group: 'Keynote speaker', color_hex: '#b4235a', text_color_hex: '#ffffff' },
+    { main_group: 'Presenter', detailed_group: 'Oral presenter', color_hex: '#2703a6', text_color_hex: '#ffffff' }
+  ];
+  STATE.participants = [
+    { candidate_id: 'DEMO-001', full_name: 'Dr. Trần Minh Anh', email: 'minhanh@example.vn', phone: '+84912333444', affiliation: 'ĐH Cần Thơ', detailed_group: 'Keynote speaker', main_group: 'Speaker', checkin_status: 'Not checked-in', pre_checkin_note: 'VIP — đón tại cửa chính', post_checkin_note: '', qr_payload: 'Dr. Trần Minh Anh|minhanh@example.vn', media_consent: 'Yes', on_site_status: 'Pre-registered' },
+    { candidate_id: 'DEMO-002', full_name: 'Lê Thị Hồng Nhung', email: 'nhung@example.com', phone: '+84988555101', affiliation: 'ĐH Huế', detailed_group: 'Oral presenter', main_group: 'Presenter', checkin_status: 'Checked-in', pre_checkin_note: '', post_checkin_note: '', qr_payload: 'Lê Thị Hồng Nhung|nhung@example.com', media_consent: 'No', on_site_status: 'Pre-registered' },
+    { candidate_id: 'DEMO-003', full_name: 'Somchai Prasert', email: 'somchai@example.ac.th', phone: '+6681222333', affiliation: 'Chiang Mai University', detailed_group: 'Participant', main_group: 'Participant', checkin_status: 'Not checked-in', pre_checkin_note: '', post_checkin_note: '', qr_payload: 'Somchai Prasert|somchai@example.ac.th', media_consent: 'Yes', on_site_status: 'Pre-registered' }
+  ];
+  STATE.dashboard = { total: 3, checked: 1, notChecked: 2, byGroup: { 'Keynote speaker': {total:1,checked:0}, 'Oral presenter': {total:1,checked:1}, 'Participant': {total:1,checked:0} } };
+
+  document.getElementById('topbarName').textContent = u.name;
+  document.getElementById('topbarRole').textContent = u.role === 'admin' ? 'Admin' : 'Staff';
+  if (u.role === 'admin') {
+    document.getElementById('tab-dashboard').style.display = '';
+    document.getElementById('tab-admin').style.display = '';
+  }
+  populateGroupDropdowns();
+  renderDashboard();
+  renderList();
+  show('screen-app');
+  hide('screen-login');
+  switchTab('checkin');
+  toast('🎭 Demo mode — chưa kết nối GAS', 'warn');
+}
+
+// ── CAMERA / QR ───────────────────────────────────────────────────────────────
+
+async function toggleCamera() {
+  if (STATE.cameraStream) { stopCamera(); return; }
+  await startCamera();
+}
+
+async function startCamera() {
+  const btn = document.getElementById('camToggleBtn');
+  const placeholder = document.getElementById('scanPlaceholder');
+  const video = document.getElementById('scanVideo');
+  const status = document.getElementById('scanStatus');
+
+  btn.textContent = 'Đang bật...';
+  status.textContent = 'Đang yêu cầu quyền camera...';
+
+  try {
+    // Try rear camera first, fallback to any
+    let stream;
+    const attempts = [
+      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 } } },
+      { video: { facingMode: 'environment' } },
+      { video: { facingMode: 'user' } },
+      { video: true }
+    ];
+    for (const c of attempts) {
+      try { stream = await navigator.mediaDevices.getUserMedia(c); break; } catch(e) {}
+    }
+    if (!stream) throw new Error('Không tìm thấy camera');
+
+    STATE.cameraStream = stream;
+    video.srcObject = stream;
+    video.style.display = '';
+    placeholder.style.display = 'none';
+    await video.play();
+    btn.textContent = '⏹ Tắt camera';
+    status.textContent = 'Đặt QR vào khung để quét';
+    startScanLoop();
+  } catch (e) {
+    let msg = '❌ Không bật được camera';
+    if (e.name === 'NotAllowedError') msg = '❌ Đã từ chối quyền camera — vào Settings để cấp phép';
+    else if (e.name === 'NotFoundError') msg = '❌ Không tìm thấy camera';
+    status.textContent = msg;
+    btn.textContent = 'Bật camera';
+  }
+}
+
+function stopCamera() {
+  if (STATE.cameraStream) { STATE.cameraStream.getTracks().forEach(t => t.stop()); STATE.cameraStream = null; }
+  if (STATE.scanLoop) { cancelAnimationFrame(STATE.scanLoop); STATE.scanLoop = null; }
+  const video = document.getElementById('scanVideo');
+  video.style.display = 'none';
+  document.getElementById('scanPlaceholder').style.display = '';
+  document.getElementById('camToggleBtn').textContent = 'Bật camera';
+  document.getElementById('scanStatus').textContent = 'Sẵn sàng';
+}
+
+function startScanLoop() {
+  const video = document.getElementById('scanVideo');
+  const canvas = document.getElementById('scanCanvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  let lastScan = 0;
+
+  const loop = () => {
+    if (!STATE.cameraStream) return;
+    STATE.scanLoop = requestAnimationFrame(loop);
+    const now = Date.now();
+    if (now - lastScan < 300) return; // scan every 300ms
+    lastScan = now;
+    if (video.readyState < 2) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0);
+    try {
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+      if (code && code.data) {
+        onQrDetected(code.data);
+      }
+    } catch(e) {}
+  };
+  STATE.scanLoop = requestAnimationFrame(loop);
+}
+
+function scanFromFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const data = ctx.getImageData(0, 0, img.width, img.height);
+      const code = jsQR(data.data, img.width, img.height);
+      if (code && code.data) onQrDetected(code.data);
+      else toast('Không đọc được QR từ ảnh', 'warn');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+let lastQrPayload = '';
+let qrCooldown = false;
+
+function onQrDetected(payload) {
+  if (qrCooldown || payload === lastQrPayload) return;
+  lastQrPayload = payload;
+  qrCooldown = true;
+  setTimeout(() => { qrCooldown = false; lastQrPayload = ''; }, 3000);
+
+  document.getElementById('scanStatus').textContent = '✅ Đã đọc QR — đang tìm...';
+  // Match by email (priority) or full_name|email format
+  let found = null;
+  const emailMatch = payload.match(/\|(.+)$/) || payload.match(/^([^\|]+)$/);
+  const email = payload.includes('|') ? payload.split('|')[1].trim() : payload.trim();
+  found = STATE.participants.find(p => p.qr_payload === payload)
+       || STATE.participants.find(p => p.email && p.email.toLowerCase() === email.toLowerCase());
+
+  if (found) {
+    showPersonCard(found.candidate_id);
+  } else {
+    document.getElementById('scanStatus').textContent = '⚠️ Không tìm thấy QR này trong danh sách';
+    toast('QR không khớp với ai trong danh sách', 'warn');
+  }
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+
+function onSearchInput(val) {
+  clearTimeout(STATE.searchTimer);
+  STATE.searchTimer = setTimeout(() => doSearch(val), 300);
+}
+
+function doSearch(q) {
+  q = q !== undefined ? q : document.getElementById('searchInput').value;
+  const query = q.toLowerCase().trim();
+  if (!query) { hide('resultBox'); return; }
+
+  const results = STATE.participants.filter(p =>
+    [p.full_name, p.email, p.phone, p.affiliation, p.detailed_group, p.notes, p.pre_checkin_note]
+      .join(' ').toLowerCase().includes(query)
+  ).slice(0, 30);
+
+  const box = document.getElementById('resultBox');
+  const list = document.getElementById('resultList');
+
+  if (!results.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink2)">Không tìm thấy</div>';
+    show('resultBox');
+    return;
+  }
+
+  list.innerHTML = results.map(p => {
+    const group = getGroup(p.detailed_group);
+    const chipStyle = group ? `background:${group.color_hex};color:${group.text_color_hex}` : 'background:var(--line)';
+    const checked = p.checkin_status === 'Checked-in';
+    return `<div class="result-item" onclick="showPersonCard('${p.candidate_id}');hideResults()">
+      <span class="result-chip" style="${chipStyle}">${p.detailed_group || 'N/A'}</span>
+      <div style="flex:1">
+        <div class="result-name">${p.full_name}${checked ? ' <span style="color:var(--ok)">✅</span>' : ''}</div>
+        <div class="result-sub">${p.email}${p.affiliation ? ' · ' + p.affiliation : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  show('resultBox');
+}
+
+function hideResults() {
+  hide('resultBox');
+  document.getElementById('searchInput').value = '';
+}
+
+// ── PERSON CARD ───────────────────────────────────────────────────────────────
+
+function showPersonCard(id) {
+  const p = STATE.participants.find(x => x.candidate_id === id);
+  if (!p) return;
+  STATE.currentPerson = p;
+
+  const group = getGroup(p.detailed_group);
+  const chipBg = group ? group.color_hex : '#ccc';
+  const chipFg = group ? group.text_color_hex : '#000';
+  const checked = p.checkin_status === 'Checked-in';
+
+  let statusBanner = '';
+  if (checked) {
+    statusBanner = `<div class="status-banner status-ok">✅ Đã check-in lúc ${fmtTime(p.checkin_time)} — bởi ${p.checkin_by}</div>`;
+  }
+
+  let noteSection = '';
+  if (p.pre_checkin_note) {
+    noteSection = `<div class="person-note-pre">⚠️ <strong>Ghi chú BTC:</strong> ${p.pre_checkin_note}</div>`;
+  }
+
+  const postNote = p.post_checkin_note ? `<div style="font-size:13px;color:var(--ink2);margin-top:4px;background:var(--line-light);padding:8px 12px;border-radius:8px">📝 ${p.post_checkin_note}</div>` : '';
+
+  const adminBtns = STATE.session.role === 'admin' ? `
+    <button class="btn btn-ghost btn-sm" onclick="openQrModal('${p.candidate_id}')">🔲 QR</button>
+    ${checked ? `<button class="btn btn-danger btn-sm" onclick="doUndo('${p.candidate_id}')">↩ Bỏ check-in</button>` : ''}
+  ` : '';
+
+  document.getElementById('personCard').innerHTML = `
+    <div class="card" style="padding:20px">
+      ${statusBanner}
+      ${noteSection}
+      <div class="person-header">
+        <div>
+          <div class="person-name">${p.title ? p.title + ' ' : ''}${p.full_name}</div>
+          <span class="person-chip" style="background:${chipBg};color:${chipFg}">${p.detailed_group || ''}</span>
+        </div>
+      </div>
+      <div class="person-grid">
+        ${p.affiliation ? `<div class="person-row"><strong>Đơn vị</strong><span>${p.affiliation}</span></div>` : ''}
+        ${p.email ? `<div class="person-row"><strong>Email</strong><span>${p.email}</span></div>` : ''}
+        ${p.phone ? `<div class="person-row"><strong>SĐT</strong><span>${p.phone}</span></div>` : ''}
+        ${p.media_consent ? `<div class="person-row"><strong>Media consent</strong><span>${p.media_consent}</span></div>` : ''}
+        ${p.country ? `<div class="person-row"><strong>Quốc gia</strong><span>${p.country}</span></div>` : ''}
+        ${p.on_site_status ? `<div class="person-row"><strong>Nguồn</strong><span>${p.on_site_status}</span></div>` : ''}
+      </div>
+      ${postNote}
+      <div class="person-actions">
+        ${!checked
+          ? `<button class="btn btn-ok" onclick="doCheckin('${p.candidate_id}','QR')">✅ Xác nhận check-in</button>`
+          : `<button class="btn btn-ghost" onclick="doCheckin('${p.candidate_id}','QR')">🔁 Check-in thêm lần</button>`
+        }
+        <button class="btn btn-ghost btn-sm" onclick="openNoteModal('${p.candidate_id}')">📝 Ghi chú</button>
+        <button class="btn btn-ghost btn-sm" onclick="openEditModal('${p.candidate_id}')">✏️ Sửa</button>
+        ${adminBtns}
+      </div>
+      <button class="btn btn-ghost btn-full" onclick="clearPersonCard()" style="margin-top:10px;font-size:13px">✕ Đóng</button>
+    </div>
+  `;
+  document.getElementById('personCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function clearPersonCard() {
+  document.getElementById('personCard').innerHTML = '';
+  STATE.currentPerson = null;
+  document.getElementById('scanStatus').textContent = 'Sẵn sàng';
+}
+
+// ── CHECK-IN ──────────────────────────────────────────────────────────────────
+
+async function doCheckin(id, method) {
+  const p = STATE.participants.find(x => x.candidate_id === id);
+  if (!p) return;
+
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    // Demo mode
+    p.checkin_status = 'Checked-in';
+    p.checkin_time = new Date().toISOString();
+    p.checkin_by = STATE.session.email;
+    showCheckinFlash(p, false);
+    showPersonCard(id);
+    renderList();
+    return;
+  }
+
+  const res = await api('checkin', { candidate_id: id, method: method || 'Manual search' });
+  if (!res.ok) {
+    if (res.message && res.message.includes('already checked')) {
+      toast('⚠️ Người này đã check-in trước đó', 'warn');
+    } else {
+      toast('❌ ' + res.message, 'err');
+    }
+    return;
+  }
+  const updated = res.data;
+  updateLocalParticipant(updated);
+  showCheckinFlash(updated, false);
+  showPersonCard(id);
+  renderList();
+  STATE.dashboard = null; // invalidate
+}
+
+async function doUndo(id) {
+  if (!confirm('Bỏ check-in cho người này?')) return;
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    const p = STATE.participants.find(x => x.candidate_id === id);
+    if (p) { p.checkin_status = 'Not checked-in'; p.checkin_time = ''; p.checkin_by = ''; }
+    showPersonCard(id); renderList(); toast('Đã bỏ check-in', 'warn'); return;
+  }
+  const res = await api('undo_checkin', { candidate_id: id });
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  updateLocalParticipant(res.data);
+  showPersonCard(id); renderList();
+  toast('Đã bỏ check-in', 'warn');
+}
+
+function showCheckinFlash(p, isWarning) {
+  const group = getGroup(p.detailed_group);
+  const flash = document.createElement('div');
+  flash.className = 'success-flash' + (isWarning ? ' warn-flash' : '');
+  flash.style.background = group ? group.color_hex : 'var(--ok)';
+  flash.style.color = group ? group.text_color_hex : '#fff';
+  flash.innerHTML = `
+    <div class="flash-icon">✅</div>
+    <div class="flash-name">${p.full_name}</div>
+    <div class="flash-group">${p.detailed_group || ''}</div>
+    <div class="flash-info">${p.affiliation || ''}</div>
+  `;
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 2500);
+  document.getElementById('scanStatus').textContent = 'Sẵn sàng — quét người tiếp theo';
+}
+
+// ── NOTE ──────────────────────────────────────────────────────────────────────
+
+function openNoteModal(id) {
+  const p = STATE.participants.find(x => x.candidate_id === id);
+  document.getElementById('note_id').value = id;
+  document.getElementById('noteText').value = p ? (p.post_checkin_note || '') : '';
+  openModal('noteModal');
+}
+
+async function submitNote() {
+  const id = document.getElementById('note_id').value;
+  const note = document.getElementById('noteText').value.trim();
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    const p = STATE.participants.find(x => x.candidate_id === id);
+    if (p) p.post_checkin_note = note;
+    closeModal('noteModal'); showPersonCard(id); toast('Đã lưu ghi chú'); return;
+  }
+  const res = await api('add_note', { candidate_id: id, note });
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  updateLocalParticipant(res.data);
+  closeModal('noteModal');
+  showPersonCard(id);
+  toast('Đã lưu ghi chú');
+}
+
+// ── EDIT ─────────────────────────────────────────────────────────────────────
+
+function openEditModal(id) {
+  const p = STATE.participants.find(x => x.candidate_id === id);
+  if (!p) return;
+  document.getElementById('edit_id').value = id;
+  document.getElementById('edit_title').value = p.title || '';
+  document.getElementById('edit_name').value = p.full_name || '';
+  document.getElementById('edit_email').value = p.email || '';
+  document.getElementById('edit_affiliation').value = p.affiliation || '';
+  document.getElementById('edit_phone').value = p.phone || '';
+  document.getElementById('edit_group').value = p.detailed_group || '';
+  document.getElementById('edit_pre_note').value = p.pre_checkin_note || '';
+  openModal('editModal');
+}
+
+async function submitEdit() {
+  const id = document.getElementById('edit_id').value;
+  const data = {
+    candidate_id: id,
+    title: document.getElementById('edit_title').value,
+    full_name: document.getElementById('edit_name').value.trim(),
+    email: document.getElementById('edit_email').value.trim(),
+    affiliation: document.getElementById('edit_affiliation').value.trim(),
+    phone: document.getElementById('edit_phone').value.trim(),
+    detailed_group: document.getElementById('edit_group').value,
+    pre_checkin_note: document.getElementById('edit_pre_note').value.trim()
+  };
+  if (!data.full_name || !data.email) { toast('Thiếu tên hoặc email', 'err'); return; }
+
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    const p = STATE.participants.find(x => x.candidate_id === id);
+    if (p) Object.assign(p, data, { main_group: (getGroup(data.detailed_group) || {}).main_group || p.main_group });
+    closeModal('editModal'); showPersonCard(id); toast('Đã lưu (demo)'); return;
+  }
+  const res = await api('save_participant', { participant: data });
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  updateLocalParticipant(res.data);
+  closeModal('editModal');
+  showPersonCard(id);
+  toast('Đã lưu thông tin');
+}
+
+// ── WALK-IN ───────────────────────────────────────────────────────────────────
+
+function openWalkinModal() {
+  ['wi_title','wi_name','wi_email','wi_affiliation','wi_phone','wi_country','wi_notes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = el.tagName === 'SELECT' ? '' : '';
+  });
+  document.getElementById('wiErr').textContent = '';
+  openModal('walkinModal');
+}
+
+async function submitWalkin() {
+  const name = document.getElementById('wi_name').value.trim();
+  const email = document.getElementById('wi_email').value.trim();
+  const aff = document.getElementById('wi_affiliation').value.trim();
+  const group = document.getElementById('wi_group').value;
+
+  if (!name || !email || !aff) {
+    document.getElementById('wiErr').textContent = 'Vui lòng điền đủ Tên, Email và Đơn vị';
+    return;
+  }
+
+  const data = {
+    title: document.getElementById('wi_title').value,
+    full_name: name,
+    email: email,
+    affiliation: aff,
+    phone: document.getElementById('wi_phone').value.trim(),
+    country: document.getElementById('wi_country').value.trim(),
+    detailed_group: group,
+    notes: document.getElementById('wi_notes').value.trim()
+  };
+
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    const fake = { ...data, candidate_id: 'ONSITE-' + Date.now(), checkin_status: 'Not checked-in', on_site_status: 'On-site Registration', main_group: (getGroup(group)||{}).main_group||'Participant', qr_payload: '', media_consent: '', pre_checkin_note: '', post_checkin_note: '' };
+    STATE.participants.push(fake);
+    closeModal('walkinModal');
+    showPersonCard(fake.candidate_id);
+    doCheckin(fake.candidate_id, 'Walk-in');
+    toast('Đã thêm và check-in');
+    renderList();
+    return;
+  }
+
+  const saveRes = await api('save_participant', { participant: data });
+  if (!saveRes.ok) { document.getElementById('wiErr').textContent = saveRes.message; return; }
+  const newP = saveRes.data;
+  STATE.participants.push(newP);
+  closeModal('walkinModal');
+  showPersonCard(newP.candidate_id);
+  await doCheckin(newP.candidate_id, 'Walk-in');
+  renderList();
+}
+
+// ── LIST ─────────────────────────────────────────────────────────────────────
+
+function setListFilter(f) {
+  STATE.listFilter = f;
+  document.querySelectorAll('#listFilters .filter-chip').forEach(el => el.classList.remove('active'));
+  event.target.classList.add('active');
+  renderList();
+}
+
+function renderList() {
+  const query = (document.getElementById('listSearch') || {}).value || '';
+  const q = query.toLowerCase().trim();
+  let rows = STATE.participants.filter(p => String(p.deleted || '').toLowerCase() !== 'true');
+
+  if (STATE.listFilter === 'checked_in') rows = rows.filter(p => p.checkin_status === 'Checked-in');
+  if (STATE.listFilter === 'not_checked_in') rows = rows.filter(p => p.checkin_status !== 'Checked-in');
+
+  if (q) rows = rows.filter(p => [p.full_name, p.email, p.affiliation, p.detailed_group].join(' ').toLowerCase().includes(q));
+
+  document.getElementById('listCount').textContent = `${rows.length} người`;
+  document.getElementById('participantList').innerHTML = rows.map(p => {
+    const group = getGroup(p.detailed_group);
+    const chipStyle = group ? `background:${group.color_hex};color:${group.text_color_hex}` : '';
+    const checked = p.checkin_status === 'Checked-in';
+    return `<div class="list-item" onclick="switchTab('checkin');showPersonCard('${p.candidate_id}')">
+      <div class="list-checkin-mark ${checked ? 'mark-yes' : 'mark-no'}">${checked ? '✅' : '⏳'}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${p.full_name}</div>
+        <div style="font-size:12px;color:var(--ink2)">${p.affiliation || p.email}</div>
+      </div>
+      <span class="result-chip" style="${chipStyle}">${p.detailed_group || ''}</span>
+    </div>`;
+  }).join('') || '<div style="padding:20px;text-align:center;color:var(--ink2)">Không có ai</div>';
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+
+async function refreshDashboard() {
+  if (GAS_URL !== 'YOUR_GAS_WEB_APP_URL_HERE') {
+    const res = await api('dashboard');
+    if (res.ok) { STATE.dashboard = res.data.summary; }
+  }
+  renderDashboard();
+}
+
+function renderDashboard() {
+  const d = STATE.dashboard;
+  if (!d) return;
+  const rate = d.total > 0 ? Math.round(d.checked / d.total * 100) : 0;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${d.total}</div><div class="stat-label">Tổng danh sách</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--ok)">${d.checked}</div><div class="stat-label">Đã check-in</div><div class="stat-rate">${rate}%</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--err)">${d.notChecked}</div><div class="stat-label">Chưa check-in</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--g)">${rate}%</div><div class="stat-label">Tỉ lệ check-in</div></div>
+  `;
+
+  const byGroup = d.byGroup || {};
+  document.getElementById('groupStats').innerHTML = Object.entries(byGroup).map(([group, data]) => {
+    const g = getGroup(group);
+    const bg = g ? g.color_hex : '#ccc';
+    const pct = data.total > 0 ? Math.round(data.checked / data.total * 100) : 0;
+    return `<div class="group-row">
+      <span class="result-chip" style="background:${bg};color:${g ? g.text_color_hex : '#000'};min-width:120px">${group}</span>
+      <div class="group-bar-wrap"><div class="group-bar" style="width:${pct}%;background:${bg}"></div></div>
+      <span style="font-weight:700;min-width:60px;text-align:right">${data.checked}/${data.total}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── ADMIN: QR ─────────────────────────────────────────────────────────────────
+
+function openQrModal(id) {
+  const p = STATE.participants.find(x => x.candidate_id === id);
+  if (!p) return;
+  STATE.qrTargetId = id;
+  document.getElementById('qrModalTitle').textContent = 'QR — ' + p.full_name;
+  const payload = p.qr_payload || (p.full_name + '|' + p.email);
+  document.getElementById('qrPayloadText').textContent = 'Payload: ' + payload;
+  document.getElementById('qrCanvas').innerHTML = '';
+  if (payload) new QRCode(document.getElementById('qrCanvas'), { text: payload, width: 200, height: 200 });
+  openModal('qrModal');
+}
+
+async function regenerateQr() {
+  const id = STATE.qrTargetId;
+  if (!id) return;
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') { toast('Demo: QR tạo lại (không lưu)', 'warn'); return; }
+  const res = await api('generate_qr', { candidate_id: id });
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  updateLocalParticipant(res.data);
+  openQrModal(id);
+  toast('Đã tạo lại QR');
+}
+
+function searchForQr(q) {
+  if (!q || q.length < 2) { document.getElementById('qrSearchResults').innerHTML = ''; return; }
+  const results = STATE.participants.filter(p =>
+    [p.full_name, p.email].join(' ').toLowerCase().includes(q.toLowerCase())
+  ).slice(0, 10);
+  document.getElementById('qrSearchResults').innerHTML = results.map(p => `
+    <div class="result-item" onclick="openQrModal('${p.candidate_id}')">
+      <div><div class="result-name">${p.full_name}</div><div class="result-sub">${p.email} · QR: ${p.qr_status || 'Not generated'}</div></div>
+    </div>
+  `).join('') || '<div style="padding:16px;color:var(--ink2);font-size:13px">Không tìm thấy</div>';
+}
+
+async function generateMissingQr() {
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') { toast('Demo mode', 'warn'); return; }
+  toast('Đang tạo QR...');
+  const res = await api('generate_missing_qr');
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  toast(`✅ Đã tạo ${res.data.generated} QR`);
+  // Refresh participants
+  const b = await api('bootstrap');
+  if (b.ok) STATE.participants = b.data.participants;
+}
+
+async function generateAllQr() {
+  if (!confirm('Tạo lại QR cho TẤT CẢ người tham dự?')) return;
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') { toast('Demo mode', 'warn'); return; }
+  toast('Đang tạo...');
+  const res = await api('generate_all_qr');
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  toast(`✅ Đã tạo ${res.data.generated} QR`);
+}
+
+// ── ADMIN: USERS ─────────────────────────────────────────────────────────────
+
+async function loadUsers() {
+  const res = GAS_URL !== 'YOUR_GAS_WEB_APP_URL_HERE' ? await api('list_users') : { ok: true, data: [
+    { name: 'Admin', email: 'admin@mekong.edu', role: 'admin', pin: 'ADMIN001', active: 'TRUE' },
+    { name: 'Nguyễn Văn A', email: '', role: 'staff', pin: 'STAFF001', active: 'TRUE' }
+  ]};
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  document.getElementById('userList').innerHTML = res.data.map(u => `
+    <div class="list-item" style="cursor:default">
+      <div style="flex:1">
+        <div style="font-weight:700">${u.name} <span class="result-chip" style="background:${u.role==='admin'?'var(--p)':'var(--ok)'};color:#fff">${u.role}</span></div>
+        <div style="font-size:12px;color:var(--ink2)">PIN: ${u.pin} ${u.email ? '· ' + u.email : ''} · ${u.active==='TRUE'||u.active===true?'✅':'❌'}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="openUserModal(${JSON.stringify(u).replace(/"/g,'&quot;')})">Sửa</button>
+    </div>
+  `).join('') || '<div style="padding:16px;color:var(--ink2)">Chưa có staff</div>';
+}
+
+function openUserModal(u) {
+  document.getElementById('userModalTitle').textContent = u ? 'Sửa Staff' : 'Thêm Staff';
+  document.getElementById('user_original_email').value = u ? (u.email || '') : '';
+  document.getElementById('user_name').value = u ? (u.name || '') : '';
+  document.getElementById('user_email').value = u ? (u.email || '') : '';
+  document.getElementById('user_pin').value = u ? (u.pin || '') : '';
+  document.getElementById('user_role').value = u ? (u.role || 'staff') : 'staff';
+  document.getElementById('user_active').value = u ? (String(u.active||'TRUE').toUpperCase()==='FALSE'?'FALSE':'TRUE') : 'TRUE';
+  openModal('userModal');
+}
+
+async function submitUser() {
+  const name = document.getElementById('user_name').value.trim();
+  const pin = document.getElementById('user_pin').value.trim();
+  if (!name || !pin) { toast('Tên và PIN không được để trống', 'err'); return; }
+  const data = {
+    originalEmail: document.getElementById('user_original_email').value,
+    name,
+    email: document.getElementById('user_email').value.trim(),
+    pin,
+    role: document.getElementById('user_role').value,
+    active: document.getElementById('user_active').value
+  };
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') { closeModal('userModal'); toast('Đã lưu (demo)'); return; }
+  const res = await api('save_user', { user: data });
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  closeModal('userModal');
+  loadUsers();
+  toast('Đã lưu user');
+}
+
+// ── ADMIN: IMPORT ─────────────────────────────────────────────────────────────
+
+function downloadTemplate() {
+  const headers = ['title','title_other_text','full_name','email','phone','affiliation','nationality','country','province','job','media_consent','detailed_group','notes'];
+  const csv = headers.join(',') + '\n' + 'Dr.,,"Nguyen Van A",a@example.com,+84900000001,"Can Tho University",Vietnamese,Vietnam,,"Lecturer","Yes","Oral presenter",""';
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'mekong_tesol_import_template.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function handleImportDrop(e) {
+  e.preventDefault();
+  document.getElementById('importDrop').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) processImportFile(file);
+}
+
+function handleImportFile(input) {
+  const file = input.files[0];
+  if (file) processImportFile(file);
+  input.value = '';
+}
+
+function processImportFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const rows = parseCSV(text);
+    STATE.importRows = rows;
+    showImportPreview(rows);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+  return lines.slice(1).map(line => {
+    const vals = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g) || [];
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (vals[i] || '').replace(/^"|"$/g,'').trim(); });
+    return obj;
+  }).filter(r => r.full_name || r.email);
+}
+
+async function showImportPreview(rows) {
+  document.getElementById('importPreview').innerHTML = `<div class="loading"><div class="spinner"></div>Đang kiểm tra ${rows.length} dòng...</div>`;
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    STATE.importClean = rows; STATE.importDups = [];
+    renderImportPreview(); return;
+  }
+  const res = await api('review_import', { rows });
+  if (!res.ok) { document.getElementById('importPreview').innerHTML = `<p style="color:var(--err)">${res.message}</p>`; return; }
+  STATE.importClean = res.data.clean;
+  STATE.importDups = res.data.duplicates;
+  renderImportPreview();
+}
+
+function renderImportPreview() {
+  const clean = STATE.importClean, dups = STATE.importDups;
+  let html = `<div class="status-banner status-ok" style="margin-bottom:12px">✅ ${clean.length} dòng hợp lệ</div>`;
+  if (dups.length) {
+    html += `<div class="status-banner status-warn" style="margin-bottom:12px">⚠️ ${dups.length} dòng có vấn đề</div>`;
+    html += dups.map((d, i) => `
+      <div class="dup-row">
+        <div style="font-weight:700">${d.row.full_name} (${d.row.email})</div>
+        <div class="dup-reason">${d.reasons.join(', ')}</div>
+        <label style="font-size:13px;margin-top:6px;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="dup_${i}"> Import dòng này
+        </label>
+      </div>`).join('');
+  }
+  if (clean.length > 0) {
+    html += `<button class="btn btn-ok btn-full" style="margin-top:14px" onclick="commitImport()">⬆️ Import ${clean.length} dòng hợp lệ</button>`;
+  }
+  document.getElementById('importPreview').innerHTML = html;
+}
+
+async function commitImport() {
+  const approved = STATE.importDups.filter((d, i) => {
+    const el = document.getElementById('dup_' + i); return el && el.checked;
+  }).map(d => d.row);
+
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    toast(`Demo: sẽ import ${STATE.importClean.length + approved.length} người`); return;
+  }
+  toast('Đang import...');
+  const res = await api('commit_import', { clean_rows: STATE.importClean, approved_rows: approved });
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  toast(`✅ Đã import ${res.data.imported} người`);
+  // Reload participants
+  const b = await api('bootstrap');
+  if (b.ok) { STATE.participants = b.data.participants; renderList(); }
+  document.getElementById('importPreview').innerHTML = '';
+  STATE.importClean = []; STATE.importDups = [];
+}
+
+// ── ADMIN: EXPORT ─────────────────────────────────────────────────────────────
+
+async function exportData(filter) {
+  let rows;
+  if (GAS_URL !== 'YOUR_GAS_WEB_APP_URL_HERE') {
+    const res = await api('export', { filter });
+    if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+    rows = res.data;
+  } else {
+    rows = STATE.participants;
+    if (filter === 'checked_in') rows = rows.filter(p => p.checkin_status === 'Checked-in');
+    if (filter === 'not_checked_in') rows = rows.filter(p => p.checkin_status !== 'Checked-in');
+  }
+
+  const headers = ['candidate_id','full_name','email','phone','affiliation','detailed_group','checkin_status','checkin_time','checkin_by','post_checkin_note','on_site_status','media_consent'];
+  const csv = [headers.join(','), ...rows.map(p =>
+    headers.map(h => '"' + String(p[h] || '').replace(/"/g,'""') + '"').join(',')
+  )].join('\n');
+
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mekong_tesol_${filter}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`✅ Đã xuất ${rows.length} dòng`);
+}
+
+// ── ADMIN: BACKUP ─────────────────────────────────────────────────────────────
+
+async function doBackup() {
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') { toast('Demo: backup sẽ tạo bản sao Google Sheet', 'warn'); return; }
+  toast('Đang tạo backup...');
+  const res = await api('backup');
+  if (!res.ok) { toast('❌ ' + res.message, 'err'); return; }
+  document.getElementById('backupResult').innerHTML = `✅ Backup thành công — <a href="https://docs.google.com/spreadsheets/d/${res.data.fileId}" target="_blank">Mở file backup</a>`;
+  toast('✅ Backup xong');
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+
+function switchTab(name) {
+  ['checkin','list','dashboard','admin'].forEach(t => {
+    const content = document.getElementById('tab-content-' + t);
+    const btn = document.getElementById('tab-' + t);
+    if (content) content.style.display = t === name ? '' : 'none';
+    if (btn) btn.classList.toggle('active', t === name);
+  });
+  if (name === 'dashboard') refreshDashboard();
+  if (name === 'admin') { switchAdminTab(STATE.currentAdminTab); loadUsers(); }
+  if (name !== 'checkin') { stopCamera(); }
+}
+
+function switchAdminTab(name) {
+  STATE.currentAdminTab = name;
+  ['import','qr','users','export','backup'].forEach(t => {
+    const el = document.getElementById('admin-' + t);
+    const btn = document.getElementById('atab-' + t);
+    if (el) el.style.display = t === name ? '' : 'none';
+    if (btn) btn.classList.toggle('active', t === name);
+  });
+  if (name === 'users') loadUsers();
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────────
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(el => el.addEventListener('click', e => {
+  if (e.target === el) el.classList.remove('open');
+}));
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+
+let toastTimer;
+function toast(msg, type) {
+  clearTimeout(toastTimer);
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  if (type === 'err') el.style.background = 'var(--err)';
+  if (type === 'warn') el.style.background = 'var(--warn)';
+  document.body.appendChild(el);
+  toastTimer = setTimeout(() => el.remove(), 3000);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+
+function show(id) { const el = document.getElementById(id); if (el) el.style.display = ''; el && (el.className.includes('screen') ? el.classList.add('active') : ''); }
+function hide(id) { const el = document.getElementById(id); if (el) { el.style.display = 'none'; el.classList.remove('active'); } }
+
+function getGroup(name) { return STATE.groups.find(g => g.detailed_group === name); }
+
+function fmtTime(iso) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }); } catch(e) { return iso; }
+}
+
+function updateLocalParticipant(updated) {
+  const idx = STATE.participants.findIndex(p => p.candidate_id === updated.candidate_id);
+  if (idx >= 0) STATE.participants[idx] = updated;
+  else STATE.participants.push(updated);
+}
+</script>
+</body>
+</html>

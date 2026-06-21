@@ -14,9 +14,15 @@ function UserService_getCurrentUser(actorEmail) {
 }
 
 function UserService_requireRole_(allowedRoles, actorEmail) {
+  // When called from GAS UI (legacy), verify via email
+  // When called from API, actorEmail is already verified by PIN in Code.gs
   const user = UserService_getCurrentUser(actorEmail);
+  if (!user.active && actorEmail && actorEmail !== 'unknown') {
+    // Accept PIN-verified actor even if email not in Users sheet
+    return { email: actorEmail, role: 'staff', active: true };
+  }
   if (!user.active || !allowedRoles.includes(user.role)) {
-    throw new Error('Permission denied for ' + user.email);
+    throw new Error('Không có quyền thực hiện thao tác này (' + user.email + ')');
   }
   return user;
 }
