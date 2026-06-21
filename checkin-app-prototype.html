@@ -1505,6 +1505,8 @@
 
     async function startCamera(){
       try{
+        const isGAS = !!(window.google && window.google.script);
+
         // Check if getUserMedia is supported
         if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
           toast('Trình duyệt không hỗ trợ', 'Cập nhật trình duyệt hoặc dùng tìm kiếm thủ công.');
@@ -1524,13 +1526,28 @@
             stream = await navigator.mediaDevices.getUserMedia(constraint);
             if(stream) break;
           }catch(e){
-            // Continue to next constraint
             continue;
           }
         }
 
         if(!stream){
-          toast('Không tìm thấy camera', '1. Cấp quyền camera cho trang này\n2. Kiểm tra Settings > Privacy > Camera\n3. Dùng tìm kiếm thủ công nếu cần');
+          let msg = '1. Cấp quyền camera cho trang này\n2. Kiểm tra Settings > Privacy > Camera\n3. Dùng tìm kiếm thủ công';
+          if(isGAS){
+            msg = '⚠️ Google Apps Script không hỗ trợ camera\n\n✅ Thay thế:\n• Dùng "Tìm thủ công" để search\n• Hoặc dùng điện thoại scan QR code';
+          }
+          toast('Camera không khả dụng', msg);
+
+          // On GAS, show simulate button as fallback
+          if(isGAS){
+            const sim = document.createElement('button');
+            sim.className = 'btn btn-indigo';
+            sim.innerHTML = '<i data-lucide="zap"></i>Demo: Simulate QR Scan';
+            sim.style.marginTop = '10px';
+            sim.style.width = '100%';
+            sim.onclick = () => { simulateQrScan(); closeModals(); };
+            $('#scanner').insertAdjacentElement('afterend', sim);
+            lucide.createIcons();
+          }
           return;
         }
 
@@ -1549,6 +1566,7 @@
         if(err.name === 'NotAllowedError') errorMsg = 'Bạn từ chối quyền camera. Cho phép trong cài đặt trình duyệt.';
         else if(err.name === 'NotFoundError') errorMsg = 'Không tìm thấy camera. Kiểm tra phần cứng.';
         else if(err.name === 'NotReadableError') errorMsg = 'Camera đang được ứng dụng khác sử dụng.';
+        else if(err.name === 'SecurityError') errorMsg = 'Google Apps Script không hỗ trợ camera. Dùng tìm kiếm thủ công.';
 
         toast('Không bật được camera', errorMsg);
       }
