@@ -1167,12 +1167,11 @@ function showPersonCard(id) {
           : `<div class="pc-status-pending">⏳ Chưa check-in</div>`
         }
 
-        <!-- Ghi chú BTC trước hội nghị -->
-        ${p.pre_checkin_note ? `
-          <div class="pc-note pc-note-pre">
-            <div class="pc-note-lbl">⚠️ Ghi chú BTC — Trước hội nghị</div>
-            <div class="pc-note-txt">${p.pre_checkin_note}</div>
-          </div>` : ''}
+        <!-- Ghi chú BTC trước hội nghị (luôn hiện, kể cả khi chưa có ghi chú) -->
+        <div class="pc-note ${p.pre_checkin_note ? 'pc-note-pre' : 'pc-note-empty'}">
+          <div class="pc-note-lbl">⚠️ Ghi chú BTC — Trước hội nghị</div>
+          <div class="pc-note-txt ${p.pre_checkin_note ? '' : 'empty'}">${p.pre_checkin_note || 'Chưa có ghi chú trước hội nghị'}</div>
+        </div>
 
         <!-- Thông tin chính -->
         <div class="pc-info">
