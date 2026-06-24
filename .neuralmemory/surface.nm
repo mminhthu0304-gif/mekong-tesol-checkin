@@ -5,9 +5,9 @@
 # ═══════════════════════════════════════════════════
 ---
 brain: default
-updated: 2026-06-21T08:27:55
-neurons: 1846
-synapses: 11188
+updated: 2026-06-23T08:51:45
+neurons: 2195
+synapses: 12780
 token_budget: 1200
 depth_available: [surface, detail, deep]
 ---
@@ -17,87 +17,80 @@ depth_available: [surface, detail, deep]
 # Agent: scan this section to understand the knowledge landscape.
 # Format: [id] content (type) {p:N} →edge→ [target_id_or_text]
 
-[c10] Error: nh\u1ecf trong `task list --all`\n  - error: nh\u1ecf trong `task list… (concept) {p:5}
+[e14] **15 = 50 – 16:20** (entity) {p:5}
+  →co_occurs→ "**16 = 25 – 17:10**"
+
+[c14] Error: nh\u1ecf trong `task list --all`\n  - error: nh\u1ecf trong `task list… (concept) {p:5}
   →stored_by→ "Error: nh\u1ecf trong `task list --all`\n  - error:…"
+  →related_to→ "Session activity: - **Nhanh nhất**: PyQt6 (dùng code…"
+  →co_occurs→ "Session activity: - **Nhanh nhất**: PyQt6 (dùng code…"
+  →related_to→ "Error: nhỏ trong `task list --all`"
+  →related_to→ "Error: nhỏ trong `task list --all`"
 
 [e15] chọn (entity) {p:5}
-  →co_occurs→ "Search"
+  →co_occurs→ "Build CLI"
+  →co_occurs→ "Naming"
   →co_occurs→ "Content"
+  →co_occurs→ "Giaviet TESOL"
   →co_occurs→ "JSON"
 
 [e16] test xem (entity) {p:5}
-  →co_occurs→ "Search"
+  →co_occurs→ "Build CLI"
+  →co_occurs→ "Naming"
   →co_occurs→ "Content"
+  →co_occurs→ "Giaviet TESOL"
   →co_occurs→ [e15] "chọn"
-  →co_occurs→ "JSON"
 
-[e17] dùng thường xuyên (entity) {p:5}
-  →co_occurs→ "Search"
-  →co_occurs→ [e16] "test xem"
-  →co_occurs→ "Content"
-  →co_occurs→ [e15] "chọn"
-  →co_occurs→ "JSON"
+[c1] = đỏ, oral presenter = xanh đậm, v (concept) {p:6}
+  →related_to→ "presenter xanh"
+  →related_to→ "oral"
 
-[e18] muốn tôi giúp (entity) {p:5}
-  →co_occurs→ "Roadmap"
-  →co_occurs→ "VD"
-  →co_occurs→ "Users/macbookpro/claude-howto/LEARNING-ROADMAP.md"
-  →co_occurs→ "Roa"
-  →co_occurs→ "Advanced"
-
-[c11] Mau Than Street (concept) {p:5}
-  →co_occurs→ "80 Mau Than Street, Ninh Kieu, Can Tho City · 18 = 30–21:00"
-  →co_occurs→ "Can Tho City"
-
-[c12] Session activity: Công cụ chuyển đổi DOCX sang PDF chưa được cài. Tôi cần cài… (concept) {p:5}
-  →related_to→ "TODO: the **HTML output be self-contained** (all…"
-  →related_to→ "chuyển đổi docx"
-  →related_to→ "công nghệ: node"
-  →related_to→ "công cụ chuyển đổi"
-  →involves→ "DOCX"
+[c2] TODO: fix `switchAdminTab` to include 'day': (concept) {p:6}
+  →related_to→ "fix"
+  →related_to→ "fix switchadmintab"
+  →related_to→ "switchAdminTab"
 
 # ── CLUSTERS ───────────────────────────────────────
 # Auto-detected topic groups from brain.db entity co-occurrence.
 # Agent: use clusters to scope recall queries.
 
-@chọn: [0668017b-b54c-44b5-9f0e-08cb26777e6d, bfad510e-4b13-4903-9522-c4aac2b3898c] "chọn số, Session activity: Xong. [speaking-test-a"
 @**15: [03e91ba8-711e-49aa-a17b-2d826471ce05, 890caea8-4319-4b65-974a-50e6b7eaf872, aa85ff46-9775-44e1-b8b8-ba15f54c2572] "14 = 55 – 15:00, **15 = 00 – 15:30**, **15 = 50 – 16:20**"
 @providing: [00afbdf1-9565-4851-b42d-e87f3ad5d5a6, 02349948-e2ce-44c2-b0f5-8f86958601f6] "Providing, Answering"
-@cần: [52d6bf6f-597e-4420-9eca-cac5849d87fd, b7766daf-c4aa-4a50-abbe-3f72098bd00b] "cần làm tiếp theo, vào sheet"
-@ngu: [01ad7488-3594-453b-b172-20b9cee69f94, a5ba5c8d-4473-4579-b7f3-b51167779285, c113b72e-75f9-4cca-ac0f-820083315ed9] "NGU GIA VIET MEKONG TESOL Branch, gmail.com, TNHH ANH NGU GIA VIET MEKONG TESOL Branc"
-@đây: [2bd71cb5-51d9-4395-baf4-bab260106395, 7c5f43a6-09f0-4936-99bb-4c07ac10d094] "đây chỉ là mẫu, phải tự soạn câu trả lời của mình Chú th"
-@dùng: [6715dc73-8335-4a7e-92f6-4d91ba854638, 6ce28e78-d3f2-49c8-bc13-f02ec6fd4fee, 9fbed652-5bd4-46c6-a64d-faa841162eb9] "dùng thường xuyên, chọn, test xem"
+@vào: [52d6bf6f-597e-4420-9eca-cac5849d87fd, b7766daf-c4aa-4a50-abbe-3f72098bd00b] "vào sheet, cần làm tiếp theo"
+@internal: [01423ba1-9505-4ae0-894b-9c8b6809a6f9, 04c300dc-5245-4a9d-b000-de51bb7d75ed] "INTERNAL, Submission"
+@gmail.com: [01ad7488-3594-453b-b172-20b9cee69f94, a5ba5c8d-4473-4579-b7f3-b51167779285] "gmail.com, TNHH ANH NGU GIA VIET MEKONG TESOL Branc"
+@phải: [2bd71cb5-51d9-4395-baf4-bab260106395, 7c5f43a6-09f0-4936-99bb-4c07ac10d094] "phải tự soạn câu trả lời của mình Chú th, đây chỉ là mẫu"
+@test: [6715dc73-8335-4a7e-92f6-4d91ba854638, 9fbed652-5bd4-46c6-a64d-faa841162eb9] "test xem, chọn"
 
 # ── SIGNALS ────────────────────────────────────────
 # Active alerts, unresolved items, pending decisions.
 # Agent: check this FIRST each session for urgent context.
 
-! [error, error không, không, không tìm, session_end]
-! [error, error từ chối, quyền camera, session_end, stop_hook]
-! [error, error không, không, không tìm, session_end]
-! [error, error từ chối, quyền camera, session_end, stop_hook]
-! [error, error không, không, không tìm, session_end]
-! [error, error từ chối, quyền camera, session_end, stop_hook]
-! [error, error không, không, không tìm, session_end]
-! [error, error từ chối, quyền camera, session_end, stop_hook]
-~ Error: → "không tìm thấy camera
-! Error: → "không tìm thấy camera | Error: → "không tìm thấy camera | Error: → "không tìm thấy camera
+~ Session activity: - Bộ lọc: Khối (Chung/Chuyên môn) → tự lọc danh sách Chủ đề tư
+~ tooltip (nút "tn" hover)**, **focus-zoom khi bôi đen text + phím f**, keyboard n
+! Error: correction của gia-viet áp dụng tốt cho reading → copy thẳng | Error: correction của…
+! TODO: step is yours: paste this CSV into the Admin UI's "Import nhanh bằng CSV" | TODO: step is…
+! Error: fix: `questionbank | Error: fix: `questionbank
+! TODO: Learn / Good to Know / Ignore for Now" — cùng tiêu chí | TODO: Learn / Good to Know / Ignore…
+! TODO: step would be `clasp push` to deploy and run `apiSetupDatabase` once — I h | TODO: step…
+! TODO: have a "Sign out" option | TODO: have a "Sign out" option | TODO: have a "Sign out" option
+! Session activity: /Users/macbookpro/claude-howto tôi muốn học Continue from wher
+~ Session activity: 1. ✅ Các câu hỏi trên đủ chưa? Có thêm/bớt gì không? 2. ⚠️ Có
 
 # ── DEPTH MAP ──────────────────────────────────────
 # When surface isn't enough, this tells agent WHERE to dig.
 # Format: [id] → depth_hint (context)
 
-[c10] → NEEDS_DEEP (8 synapses in brain.db, recall "Error: nh\u1ecf trong `task list…")
-[e15] → NEEDS_DEEP (11 synapses in brain.db, recall "chọn")
+[c1] → NEEDS_DEEP (13 synapses in brain.db, recall "= đỏ, oral presenter = xanh đậm, v")
+[c2] → NEEDS_DEEP (13 synapses in brain.db, recall "TODO: fix `switchAdminTab` to include…")
+[e14] → NEEDS_DEEP (5 synapses in brain.db, recall "**15 = 50 – 16:20**")
+[e15] → NEEDS_DETAIL (11 total synapses, recall "chọn")
 [e16] → NEEDS_DETAIL (12 total synapses, recall "test xem")
-[e17] → NEEDS_DETAIL (13 total synapses, recall "dùng thường xuyên")
-[e18] → NEEDS_DETAIL (11 total synapses, recall "muốn tôi giúp")
-[c11] → NEEDS_DEEP (7 synapses in brain.db, recall "Mau Than Street")
 
 # ── META ───────────────────────────────────────────
 # Stats for agent to gauge brain richness
 
-coverage: 0.02
-staleness: 0.23
-last_consolidation: 2026-06-21T08:27:55
-top_entities: [Session, 14, Providing, nhập, cần]
+coverage: 0.01
+staleness: 0.17
+last_consolidation: 2026-06-23T08:51:45
+top_entities: [Session, Providing, Hằng, nhập, cần]
